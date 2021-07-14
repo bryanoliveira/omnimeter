@@ -9,6 +9,9 @@ class CPUPlugin(PluginInterface):
     def get_name(self):
         return "CPU"
 
+    def get_description(self):
+        return "A simple CPU monitor."
+
     def get_dict(self):
         freq = psutil.cpu_freq()
         return {

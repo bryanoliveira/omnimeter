@@ -17,6 +17,13 @@ class PluginInterface(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     @abc.abstractmethod
+    def get_description(self) -> str:
+        """
+        Returns plugin description.
+        """
+        raise NotImplementedError
+
+    @abc.abstractmethod
     def get_dict(self) -> dict:
         """
         Returns plugin info as a dictionary.

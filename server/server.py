@@ -43,3 +43,17 @@ def get_stats():
             plugin.get_id(): plugin.get_dict(),
         }
     return stats
+
+
+@app.route("/plugins")
+def get_plugins():
+    """
+    Gets available plugin information
+    """
+    return {
+        plugin.get_id(): {
+            "name": plugin.get_name(),
+            "description": plugin.get_description(),
+        }
+        for plugin in plugins
+    }
