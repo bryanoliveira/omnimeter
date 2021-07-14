@@ -1,5 +1,8 @@
-import psutil
+# required interface
 from plugin_interface import PluginInterface
+
+# plugin imports
+import psutil
 
 
 class CPUPlugin(PluginInterface):

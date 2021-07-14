@@ -36,7 +36,6 @@ def get_stats():
     Gets stats dicts from all modules in plugins folder
     """
     stats = {}
-
     for plugin in plugins:
         stats = {
             **stats,
