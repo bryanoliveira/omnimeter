@@ -1,9 +1,9 @@
 import 'dart:developer';
 
 class Frequency {
-  final num current;
-  final num min;
-  final num max;
+  final double current;
+  final double min;
+  final double max;
 
   Frequency({
     required this.current,
@@ -29,7 +29,7 @@ class CPU {
 
   factory CPU.fromJson(Map<String, dynamic> json) {
     return CPU(
-      frequency: Frequency.fromJson(json['cpu']['frequency']),
+      frequency: Frequency.fromJson(json['frequency']),
     );
   }
 }

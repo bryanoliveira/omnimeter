@@ -3,10 +3,15 @@ import 'dart:convert';
 import 'dart:ffi';
 import 'dart:developer';
 
-import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:http/http.dart' as http;
+import 'package:wakelock/wakelock.dart';
 
+import 'package:fl_chart/fl_chart.dart';
+
+import 'charts/line.dart';
 import 'models/cpu.dart';
 
 void main() {
@@ -30,6 +35,10 @@ class MyApp extends StatelessWidget {
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
         primarySwatch: Colors.blue,
+        primaryColor: const Color(0xff262545),
+        primaryColorDark: const Color(0xff201f39),
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: Colors.black,
       ),
       home: MyHomePage(title: 'Hardware Monitor'),
     );
@@ -55,36 +64,38 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  num _cpuFreq = 0.0;
+  final cpuFreqs = <FlSpot>[];
+
+  final limitCount = 100;
+  Map<String, dynamic> chartsData = Map<String, dynamic>();
+  double currentX = 0;
   Timer? timer;
-
-  void fetchCpuData() async {
-    final response = await http.get(Uri.parse('http://192.168.0.4:5000'));
-    num cpuFreq = 0.0;
-    if (response.statusCode == 200) {
-      cpuFreq = CPU.fromJson(jsonDecode(response.body)).frequency.current;
-    } else {
-      throw Exception("Failed to load frequency");
-    }
-
-    // This call to setState tells the Flutter framework that something has
-    // changed in this State, which causes it to rerun the build method below
-    // so that the display can reflect the updated values. If we changed
-    // _counter without calling setState(), then the build method would not be
-    // called again, and so nothing would appear to happen.
-    setState(() {
-      _cpuFreq = cpuFreq;
-    });
-  }
 
   @override
   void initState() {
     super.initState();
-    timer = Timer.periodic(Duration(seconds: 2), (Timer t) => fetchCpuData());
+
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+    SystemChrome.setEnabledSystemUIOverlays([]);
+
+    timer = Timer.periodic(
+        Duration(milliseconds: 500), (Timer t) => fetchCpuData());
   }
 
   @override
   void dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+
     timer?.cancel();
     super.dispose();
   }
@@ -97,13 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
@@ -123,49 +128,80 @@ class _MyHomePageState extends State<MyHomePage> {
           // axis because Columns are vertical (the cross axis would be
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'CPU Frequency:',
-            ),
-            Text(
-              '${_cpuFreq.toStringAsFixed(2)}',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-            SizedBox(
-              height: 500,
-              child: charts.BarChart(
-                [
-                  new charts.Series<Map<String, dynamic>, String>(
-                    id: 'Sales',
-                    colorFn: (_, __) =>
-                        charts.MaterialPalette.blue.shadeDefault,
-                    domainFn: (Map<String, dynamic> points, _) =>
-                        points["name"],
-                    measureFn: (Map<String, dynamic> points, _) =>
-                        points["freq"],
-                    data: [
-                      <String, dynamic>{"name": "avg", "freq": _cpuFreq}
-                    ],
-                  ),
-                ],
-                animate: true,
-                primaryMeasureAxis: new charts.NumericAxisSpec(
-                  tickProviderSpec: new charts.StaticNumericTickProviderSpec(
-                    <charts.TickSpec<num>>[
-                      charts.TickSpec<num>(5000),
-                      charts.TickSpec<num>(4000),
-                      charts.TickSpec<num>(3000),
-                      charts.TickSpec<num>(2000),
-                      charts.TickSpec<num>(1000),
-                      charts.TickSpec<num>(0),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          ],
+          children: createCharts(),
         ),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  void fetchCpuData() async {
+    final response = await http.get(Uri.parse('http://192.168.0.4:5000'));
+    if (response.statusCode == 200) {
+      Wakelock.enable();
+
+      Map<String, dynamic> data = jsonDecode(response.body);
+
+      while (cpuFreqs.length > limitCount) {
+        cpuFreqs.removeAt(0);
+      }
+
+      // This call to setState tells the Flutter framework that something has
+      // changed in this State, which causes it to rerun the build method below
+      // so that the display can reflect the updated values. If we changed
+      // _counter without calling setState(), then the build method would not be
+      // called again, and so nothing would appear to happen.
+
+      setState(() {
+        setChartData(
+          data["default_cpu"]["name"],
+          data["default_cpu"]["utilization"],
+        );
+
+        setChartData(
+          data["default_nvidia_gpu"]["0"]["name"],
+          data["default_nvidia_gpu"]["0"]["utilization"],
+        );
+
+        currentX++;
+      });
+    } else {
+      Wakelock.disable();
+      throw Exception("Failed to load frequency");
+    }
+  }
+
+  void setChartData(String key, double currentValue,
+      [double? minY, double? maxY]) {
+    if (!chartsData.containsKey(key)) chartsData[key] = Map<String, dynamic>();
+    if (!chartsData[key].containsKey("data"))
+      chartsData[key]["data"] = <FlSpot>[];
+
+    while (chartsData[key]["data"].length > limitCount) {
+      chartsData[key]["data"].removeAt(0);
+    }
+    chartsData[key]["minY"] = minY ?? 0.0;
+    chartsData[key]["maxY"] = maxY ?? 100.0;
+    chartsData[key]["data"].add(FlSpot(currentX, currentValue));
+  }
+
+  List<Widget> createCharts() {
+    List<Widget> charts = <Widget>[];
+    chartsData.forEach((key, chartData) => {
+          if (chartData.containsKey("data"))
+            charts.add(chartData["data"].isNotEmpty
+                ? Container(
+                    width: 300,
+                    height: 100,
+                    child: CommonLineChart(
+                      data: chartData["data"],
+                      minY: chartData["minY"],
+                      maxY: chartData["maxY"],
+                      title: key,
+                    ),
+                  )
+                : Container())
+        });
+
+    return charts;
   }
 }

@@ -13,7 +13,7 @@ class GPUPlugin(PluginInterface):
             "nvidia-smi -i 0 --query-gpu=index,name,"
             + "temperature.gpu,"
             + "temperature.memory,"
-            + "encoder.stats.averageFps"
+            + "encoder.stats.averageFps,"
             + "utilization.gpu,"
             + "utilization.memory,"
             + "memory.total,"
@@ -48,19 +48,19 @@ class GPUPlugin(PluginInterface):
         for info in data:
             gpus_info[int(info["index"])] = {
                 "name": info["name"],
-                "utilization": info["utilization.gpu"],
+                "utilization": float(info["utilization.gpu"]),
                 "memory": {
-                    "max": info["memory.total"],
-                    "current": info["memory.used"],
-                    "available": info["memory.free"],
+                    "max": float(info["memory.total"]),
+                    "current": float(info["memory.used"]),
+                    "available": float(info["memory.free"]),
                 },
                 "power": {
-                    "max": info["power.limit"],
-                    "current": info["power.draw"],
+                    "max": float(info["power.limit"]),
+                    "current": float(info["power.draw"]),
                 },
                 "frequency": {
-                    "current": info["clocks.current.sm"],
-                    "max": info["clocks.max.sm"],
+                    "current": float(info["clocks.current.sm"]),
+                    "max": float(info["clocks.max.sm"]),
                 },
             }
         return gpus_info
