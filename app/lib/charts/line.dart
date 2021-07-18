@@ -1,51 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'indicator.dart';
 
 class CommonLineChart extends StatelessWidget {
   final double minY;
   final double maxY;
-  final List<FlSpot> data;
-  String? title;
+  final List<Map<String, dynamic>> data; // List<FlSpot>
+  // final List<Color> colors =
 
-  CommonLineChart(
-      {required this.data, required this.minY, required this.maxY, this.title});
+  CommonLineChart({required this.data, required this.minY, required this.maxY});
 
   @override
   Widget build(BuildContext context) {
     final double rangeY = maxY - minY;
 
+    List<LineChartBarData> lineBarsData = <LineChartBarData>[];
+    List<Widget> indicators = <Widget>[];
+
+    data.forEach((trace) {
+      lineBarsData.add(LineChartBarData(
+        spots: trace["spots"],
+        dotData: FlDotData(
+          show: false,
+        ),
+        colors: [Colors.blueAccent.withOpacity(0), trace["color"]],
+        colorStops: [0.1, 1.0],
+        barWidth: 4,
+        isCurved: false,
+      ));
+
+      indicators.add(Indicator(
+        color: trace["color"],
+        text: trace["title"],
+        isSquare: false,
+        size: 12,
+        textColor: Colors.grey,
+      ));
+    });
+
     return Stack(
       children: <Widget>[
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 36.0,
-              top: 24,
-            ),
-            child: Text(
-              title ?? 'Line Chart',
-              style: TextStyle(
-                  color: Color(
-                    0xffffffff,
-                  ),
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        const SizedBox(
-          height: 22,
-        ),
-        Padding(
-          padding: const EdgeInsets.only(left: 28.0, right: 28),
+        Container(
+          width: 200,
+          height: 100,
           child: LineChart(
             LineChartData(
               minY: minY,
               maxY: maxY,
-              minX: data.first.x,
-              maxX: data.last.x,
+              minX: data[0]["spots"].first.x,
+              maxX: data[0]["spots"].last.x,
               borderData: FlBorderData(
                 show: true,
                 border: Border.all(
@@ -73,18 +77,7 @@ class CommonLineChart extends StatelessWidget {
                   );
                 },
               ),
-              lineBarsData: [
-                LineChartBarData(
-                  spots: data,
-                  dotData: FlDotData(
-                    show: false,
-                  ),
-                  colors: [Colors.redAccent.withOpacity(0), Colors.redAccent],
-                  colorStops: [0.1, 1.0],
-                  barWidth: 4,
-                  isCurved: false,
-                )
-              ],
+              lineBarsData: lineBarsData,
               titlesData: FlTitlesData(
                 show: true,
                 bottomTitles: SideTitles(
@@ -104,7 +97,14 @@ class CommonLineChart extends StatelessWidget {
               ),
             ),
             swapAnimationDuration: Duration(milliseconds: 150), // Optional
-            swapAnimationCurve: Curves.linear, // Optional
+            swapAnimationCurve: Curves.linear, // Optiona
+          ),
+        ),
+        Positioned(
+          right: 5,
+          top: 5,
+          child: Row(
+            children: indicators,
           ),
         ),
       ],

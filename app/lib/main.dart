@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Hardware Monitor',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -64,9 +65,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final cpuFreqs = <FlSpot>[];
-
   final limitCount = 100;
+  bool offline = true;
+  String offlineStatus = "";
   Map<String, dynamic> chartsData = Map<String, dynamic>();
   double currentX = 0;
   Timer? timer;
@@ -82,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
     SystemChrome.setEnabledSystemUIOverlays([]);
 
     timer = Timer.periodic(
-        Duration(milliseconds: 500), (Timer t) => fetchCpuData());
+        Duration(milliseconds: 2000), (Timer t) => fetchCpuData());
   }
 
   @override
@@ -109,41 +110,135 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: createCharts(),
-        ),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      body: Container(
+        child: offline
+            ? Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "OFFLINE",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      offlineStatus,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.grey[800],
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold),
+                    )
+                  ],
+                ),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: chartsData.containsKey("cpu")
+                            ? <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    left: 30.0,
+                                    bottom: 18,
+                                  ),
+                                  child: Text(
+                                    "CPU " + chartsData["cpu"]["name"],
+                                    style: TextStyle(
+                                        color: Colors.grey[400],
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Container(
+                                  width: 500,
+                                  height: 100,
+                                  child: chartsData["cpu"]
+                                              .containsKey("data") &&
+                                          chartsData["cpu"]["data"].isNotEmpty
+                                      ? CommonLineChart(
+                                          data: [
+                                              {
+                                                "title": "% Usage",
+                                                "spots": chartsData["cpu"]
+                                                    ["data"],
+                                                "color": Colors.redAccent,
+                                              }
+                                            ],
+                                          minY: chartsData["cpu"]["minY"],
+                                          maxY: chartsData["cpu"]["maxY"])
+                                      : null,
+                                )
+                              ]
+                            : <Widget>[],
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: chartsData.containsKey("gpu")
+                            ? <Widget>[
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    left: 30.0,
+                                    top: 24,
+                                    bottom: 18,
+                                  ),
+                                  child: Text(
+                                    "GPU " + chartsData["gpu"]["name"],
+                                    style: TextStyle(
+                                        color: Colors.grey[400],
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                chartsData["gpu"].containsKey("data") &&
+                                        chartsData["gpu"]["data"].isNotEmpty
+                                    ? CommonLineChart(
+                                        data: [
+                                            {
+                                              "title": "% Usage",
+                                              "spots": chartsData["gpu"]
+                                                  ["data"],
+                                              "color": Colors.redAccent,
+                                            }
+                                          ],
+                                        minY: chartsData["gpu"]["minY"],
+                                        maxY: chartsData["gpu"]["maxY"])
+                                    : Container(),
+                              ]
+                            : <Widget>[],
+                      )
+                    ],
+                  ),
+                ],
+              ),
+      ),
     );
   }
 
   void fetchCpuData() async {
-    final response = await http.get(Uri.parse('http://192.168.0.4:5000'));
-    if (response.statusCode == 200) {
+    try {
+      final response = await http.get(Uri.parse('http://192.168.0.4:5000'));
+      if (response.statusCode != 200) throw new Exception(response.statusCode);
+
       Wakelock.enable();
+      offline = false;
 
       Map<String, dynamic> data = jsonDecode(response.body);
-
-      while (cpuFreqs.length > limitCount) {
-        cpuFreqs.removeAt(0);
-      }
 
       // This call to setState tells the Flutter framework that something has
       // changed in this State, which causes it to rerun the build method below
@@ -153,55 +248,53 @@ class _MyHomePageState extends State<MyHomePage> {
 
       setState(() {
         setChartData(
+          "cpu",
           data["default_cpu"]["name"],
-          data["default_cpu"]["utilization"],
+          {
+            "% Usage": data["default_cpu"]["utilization"],
+            "% Memory": data["default_cpu"]["memory"]["current"] /
+                data["default_cpu"]["memory"]["max"],
+          },
         );
 
         setChartData(
+          "gpu",
           data["default_nvidia_gpu"]["0"]["name"],
-          data["default_nvidia_gpu"]["0"]["utilization"],
+          {
+            "% Usage": data["default_nvidia_gpu"]["0"]["utilization"],
+            "% Memory": data["default_nvidia_gpu"]["0"]["memory"]["current"] /
+                data["default_nvidia_gpu"]["0"]["memory"]["max"],
+          },
         );
 
         currentX++;
       });
-    } else {
+    } catch (e) {
+      setState(() {
+        offline = true;
+        offlineStatus = e.toString();
+      });
       Wakelock.disable();
-      throw Exception("Failed to load frequency");
     }
   }
 
-  void setChartData(String key, double currentValue,
+  void setChartData(String key, String name, Map<String, double> currentValues,
       [double? minY, double? maxY]) {
     if (!chartsData.containsKey(key)) chartsData[key] = Map<String, dynamic>();
-    if (!chartsData[key].containsKey("data"))
-      chartsData[key]["data"] = <FlSpot>[];
 
-    while (chartsData[key]["data"].length > limitCount) {
-      chartsData[key]["data"].removeAt(0);
-    }
+    chartsData[key]["name"] = name;
     chartsData[key]["minY"] = minY ?? 0.0;
     chartsData[key]["maxY"] = maxY ?? 100.0;
-    chartsData[key]["data"].add(FlSpot(currentX, currentValue));
-  }
 
-  List<Widget> createCharts() {
-    List<Widget> charts = <Widget>[];
-    chartsData.forEach((key, chartData) => {
-          if (chartData.containsKey("data"))
-            charts.add(chartData["data"].isNotEmpty
-                ? Container(
-                    width: 300,
-                    height: 100,
-                    child: CommonLineChart(
-                      data: chartData["data"],
-                      minY: chartData["minY"],
-                      maxY: chartData["maxY"],
-                      title: key,
-                    ),
-                  )
-                : Container())
-        });
+    currentValues.forEach((title, value) {
+      if (!chartsData[key].containsKey(title))
+        chartsData[key][title] = <FlSpot>[];
 
-    return charts;
+      while (chartsData[key][title].length > limitCount) {
+        chartsData[key][title].removeAt(0);
+      }
+
+      chartsData[key][title].add(FlSpot(currentX, value));
+    });
   }
 }
