@@ -19,16 +19,17 @@ class CommonLineChart extends StatelessWidget {
     List<Widget> indicators = <Widget>[];
 
     data.forEach((trace) {
-      lineBarsData.add(LineChartBarData(
-        spots: trace["spots"],
-        dotData: FlDotData(
-          show: false,
-        ),
-        colors: [Colors.blueAccent.withOpacity(0), trace["color"]],
-        colorStops: [0.1, 1.0],
-        barWidth: 4,
-        isCurved: false,
-      ));
+      if (trace["spots"].isNotEmpty)
+        lineBarsData.add(LineChartBarData(
+          spots: trace["spots"],
+          dotData: FlDotData(
+            show: false,
+          ),
+          colors: [Colors.blueAccent.withOpacity(0), trace["color"]],
+          colorStops: [0.1, 1.0],
+          barWidth: 4,
+          isCurved: false,
+        ));
 
       indicators.add(Indicator(
         color: trace["color"],

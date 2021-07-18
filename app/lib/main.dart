@@ -160,25 +160,16 @@ class _MyHomePageState extends State<MyHomePage> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ),
-                                Container(
-                                  width: 500,
-                                  height: 100,
-                                  child: chartsData["cpu"]
-                                              .containsKey("data") &&
-                                          chartsData["cpu"]["data"].isNotEmpty
-                                      ? CommonLineChart(
-                                          data: [
-                                              {
-                                                "title": "% Usage",
-                                                "spots": chartsData["cpu"]
-                                                    ["data"],
-                                                "color": Colors.redAccent,
-                                              }
-                                            ],
-                                          minY: chartsData["cpu"]["minY"],
-                                          maxY: chartsData["cpu"]["maxY"])
-                                      : null,
-                                )
+                                CommonLineChart(
+                                    data: [
+                                      {
+                                        "title": "% Usage",
+                                        "spots": chartsData["cpu"]["traces"],
+                                        "color": Colors.redAccent,
+                                      }
+                                    ],
+                                    minY: chartsData["cpu"]["minY"],
+                                    maxY: chartsData["cpu"]["maxY"]),
                               ]
                             : <Widget>[],
                       )
@@ -212,7 +203,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             {
                                               "title": "% Usage",
                                               "spots": chartsData["gpu"]
-                                                  ["data"],
+                                                  ["traces"],
                                               "color": Colors.redAccent,
                                             }
                                           ],
@@ -287,11 +278,13 @@ class _MyHomePageState extends State<MyHomePage> {
     chartsData[key]["maxY"] = maxY ?? 100.0;
 
     currentValues.forEach((title, value) {
+      if (!chartsData[key].containsKey("traces"))
+        chartsData[key]["traces"] = {};
       if (!chartsData[key].containsKey(title))
-        chartsData[key][title] = <FlSpot>[];
+        chartsData[key]["traces"][title] = <FlSpot>[];
 
-      while (chartsData[key][title].length > limitCount) {
-        chartsData[key][title].removeAt(0);
+      while (chartsData[key]["traces"][title].length > limitCount) {
+        chartsData[key]["traces"][title].removeAt(0);
       }
 
       chartsData[key][title].add(FlSpot(currentX, value));
