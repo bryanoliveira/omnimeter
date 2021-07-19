@@ -9,9 +9,14 @@ class TemperatureBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Color> colors = <Color>[Colors.blueAccent];
-    if (temperature > 60) colors.add(Colors.yellowAccent);
-    if (temperature > 75) colors.add(Colors.redAccent);
+    List<Color> colors = <Color>[
+      Colors.blue.shade200,
+      Colors.blue.shade700,
+    ];
+    if (temperature > 60) colors.add(Colors.yellow.shade300);
+    if (temperature > 67) colors.add(Colors.yellow.shade700);
+    if (temperature > 75) colors.add(Colors.red);
+    if (temperature > 80) colors.add(Colors.red.shade900);
 
     return Container(
       width: 20,
@@ -30,7 +35,7 @@ class TemperatureBarChart extends StatelessWidget {
                     show: true,
                     y: 100,
                     colors: [
-                      Colors.grey.shade800,
+                      Colors.grey.shade900,
                     ],
                   ),
                 ),
