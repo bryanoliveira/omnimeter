@@ -145,18 +145,41 @@ class _MyHomePageState extends State<MyHomePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: chartsData.containsKey("cpu")
                             ? <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                    left: 30.0,
-                                    bottom: 18,
-                                  ),
-                                  child: Text(
-                                    "CPU " + chartsData["cpu"]["name"],
-                                    style: TextStyle(
-                                        color: Colors.grey[400],
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold),
-                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                        left: 25.0,
+                                        bottom: 18,
+                                      ),
+                                      child: Text(
+                                        "CPU " + chartsData["cpu"]["name"],
+                                        style: TextStyle(
+                                          color: Colors.grey[400],
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                        left: 25.0,
+                                        bottom: 18,
+                                      ),
+                                      child: Text(
+                                        chartsData["cpu"]["frequency"]
+                                                .toStringAsFixed(0) +
+                                            " MHz",
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          color: Colors.grey[800],
+                                          fontSize: 22,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 CommonLineChart(
                                     data: chartsData["cpu"]["traces"],
@@ -188,19 +211,48 @@ class _MyHomePageState extends State<MyHomePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: chartsData.containsKey("gpu")
                             ? <Widget>[
-                                Padding(
-                                  padding: EdgeInsets.only(
-                                    left: 30.0,
-                                    top: 24,
-                                    bottom: 18,
-                                  ),
-                                  child: Text(
-                                    "GPU " + chartsData["gpu"]["name"],
-                                    style: TextStyle(
-                                        color: Colors.grey[400],
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold),
-                                  ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                        left: 25.0,
+                                        top: 24,
+                                        bottom: 18,
+                                      ),
+                                      child: Text(
+                                        "GPU " + chartsData["gpu"]["name"],
+                                        style: TextStyle(
+                                            color: Colors.grey[400],
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                        left: 25.0,
+                                        top: 24,
+                                        bottom: 18,
+                                      ),
+                                      child: Text(
+                                        chartsData["gpu"]["frequency"]
+                                                .toStringAsFixed(0) +
+                                            " MHz  |  " +
+                                            chartsData["gpu"]["power"]
+                                                .toStringAsFixed(0) +
+                                            " W  |  " +
+                                            chartsData["gpu"]["fps"]
+                                                .toString() +
+                                            " FPS",
+                                        textAlign: TextAlign.right,
+                                        style: TextStyle(
+                                          color: Colors.grey[800],
+                                          fontSize: 22,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 CommonLineChart(
                                     data: chartsData["gpu"]["traces"],
@@ -233,7 +285,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void fetchCpuData() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.0.4:5000'));
+      final response = await http
+          .get(Uri.parse('http://192.168.0.4:5000'))
+          .timeout(const Duration(seconds: 5));
       if (response.statusCode != 200) throw new Exception(response.statusCode);
 
       Wakelock.enable();
@@ -256,6 +310,7 @@ class _MyHomePageState extends State<MyHomePage> {
         }, {
           "name": data["default_cpu"]["name"],
           "temperature": data["default_cpu"]["temperature"],
+          "frequency": data["default_cpu"]["frequency"]["current"],
         });
 
         setChartData("gpu", {
@@ -266,6 +321,9 @@ class _MyHomePageState extends State<MyHomePage> {
         }, {
           "name": data["default_nvidia_gpu"]["0"]["name"],
           "temperature": data["default_nvidia_gpu"]["0"]["temperature"],
+          "fps": data["default_nvidia_gpu"]["0"]["fps"],
+          "frequency": data["default_nvidia_gpu"]["0"]["frequency"]["current"],
+          "power": data["default_nvidia_gpu"]["0"]["power"]["current"],
         });
 
         currentX++;
@@ -283,13 +341,14 @@ class _MyHomePageState extends State<MyHomePage> {
       Map<String, dynamic> immediateValues) {
     if (!chartsData.containsKey(key)) chartsData[key] = Map<String, dynamic>();
 
-    chartsData[key]["name"] = immediateValues["name"];
+    immediateValues.forEach((title, value) {
+      chartsData[key][title] = immediateValues[title];
+    });
+
     chartsData[key]["minY"] =
         immediateValues.containsKey("minY") ? immediateValues["minY"] : 0.0;
     chartsData[key]["maxY"] =
         immediateValues.containsKey("maxY") ? immediateValues["maxY"] : 100.0;
-
-    chartsData[key]["temperature"] = immediateValues["temperature"];
 
     currentValues.forEach((title, value) {
       if (!chartsData[key].containsKey("traces"))
