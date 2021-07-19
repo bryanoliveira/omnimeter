@@ -31,7 +31,7 @@ except Exception as e:
 print("Plugins:", plugins)
 
 print("Waking up device")
-os.popen("./adb shell input keyevent KEYCODE_WAKEUP")
+os.popen("adb shell input keyevent KEYCODE_WAKEUP")
 print("Starting server...")
 
 
