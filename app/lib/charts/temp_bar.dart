@@ -13,10 +13,30 @@ class TemperatureBarChart extends StatelessWidget {
       Colors.blue.shade200,
       Colors.blue.shade700,
     ];
-    if (temperature > 60) colors.add(Colors.yellow.shade300);
-    if (temperature > 67) colors.add(Colors.yellow.shade700);
-    if (temperature > 75) colors.add(Colors.red);
-    if (temperature > 80) colors.add(Colors.red.shade900);
+    if (temperature > 60) {
+      colors = <Color>[
+        Colors.blue.shade700,
+        Colors.yellow.shade300,
+      ];
+    }
+    if (temperature > 67) {
+      colors = <Color>[
+        Colors.yellow.shade300,
+        Colors.yellow.shade700,
+      ];
+    }
+    if (temperature > 75) {
+      colors = <Color>[
+        Colors.yellow.shade700,
+        Colors.red,
+      ];
+    }
+    if (temperature > 80) {
+      colors = <Color>[
+        Colors.red,
+        Colors.red.shade900,
+      ];
+    }
 
     return Container(
       width: 20,
