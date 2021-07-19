@@ -275,7 +275,7 @@ class _MyHomePageState extends State<MyHomePage> {
         offline = true;
         offlineStatus = e.toString();
       });
-      // Wakelock.disable();
+      Wakelock.disable();
     }
   }
 
