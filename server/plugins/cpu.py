@@ -2,6 +2,7 @@
 from plugin_interface import PluginInterface
 
 # plugin imports
+import os
 import cpuinfo
 import psutil
 
@@ -32,5 +33,5 @@ class CPUPlugin(PluginInterface):
                 "max": freq.max,
                 "min": freq.min,
             },
-            "temperature": psutil.sensors_temperatures()["k10temp"][0].current,
+            "temperature": psutil.sensors_temperatures()["k10temp"][0].current if os.name == "posix" else 0.0,
         }
