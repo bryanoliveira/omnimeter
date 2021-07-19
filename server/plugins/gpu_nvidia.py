@@ -63,6 +63,7 @@ class GPUPlugin(PluginInterface):
                     "current": float(info["clocks.current.sm"]),
                     "max": float(info["clocks.max.sm"]),
                 },
+                "fps": int(info["encoder.stats.averageFps"]),
             }
         return gpus_info
 

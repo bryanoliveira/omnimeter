@@ -5,8 +5,11 @@ import pkgutil
 from flask import Flask
 from plugin_interface import PluginInterface
 
+# TODO add tray icon with pystray
+
 app = Flask(__name__)
 plugins = []
+
 
 @app.route("/")
 def get_stats():
@@ -34,6 +37,7 @@ def get_plugins():
         }
         for plugin in plugins
     }
+
 
 if __name__ == "__main__":
     try:
