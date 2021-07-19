@@ -1,18 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:ffi';
-import 'dart:developer';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
-import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:http/http.dart' as http;
 import 'package:wakelock/wakelock.dart';
 
 import 'package:fl_chart/fl_chart.dart';
 
 import 'charts/line.dart';
-import 'models/cpu.dart';
+import 'charts/temp_bar.dart';
 
 void main() {
   runApp(MyApp());
@@ -109,6 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+
     return Scaffold(
       body: Container(
         child: offline
@@ -161,18 +159,26 @@ class _MyHomePageState extends State<MyHomePage> {
                                   ),
                                 ),
                                 CommonLineChart(
-                                    data: [
-                                      {
-                                        "title": "% Usage",
-                                        "spots": chartsData["cpu"]["traces"],
-                                        "color": Colors.redAccent,
-                                      }
-                                    ],
+                                    data: chartsData["cpu"]["traces"],
                                     minY: chartsData["cpu"]["minY"],
                                     maxY: chartsData["cpu"]["maxY"]),
                               ]
                             : <Widget>[],
-                      )
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: 50,
+                            ),
+                            child: TemperatureBarChart(
+                              temperature: chartsData["cpu"]["temperature"],
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                   Row(
@@ -196,23 +202,27 @@ class _MyHomePageState extends State<MyHomePage> {
                                         fontWeight: FontWeight.bold),
                                   ),
                                 ),
-                                chartsData["gpu"].containsKey("data") &&
-                                        chartsData["gpu"]["data"].isNotEmpty
-                                    ? CommonLineChart(
-                                        data: [
-                                            {
-                                              "title": "% Usage",
-                                              "spots": chartsData["gpu"]
-                                                  ["traces"],
-                                              "color": Colors.redAccent,
-                                            }
-                                          ],
-                                        minY: chartsData["gpu"]["minY"],
-                                        maxY: chartsData["gpu"]["maxY"])
-                                    : Container(),
+                                CommonLineChart(
+                                    data: chartsData["gpu"]["traces"],
+                                    minY: chartsData["gpu"]["minY"],
+                                    maxY: chartsData["gpu"]["maxY"]),
                               ]
                             : <Widget>[],
-                      )
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: 70,
+                            ),
+                            child: TemperatureBarChart(
+                              temperature: chartsData["gpu"]["temperature"],
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ],
@@ -238,25 +248,25 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
 
       setState(() {
-        setChartData(
-          "cpu",
-          data["default_cpu"]["name"],
-          {
-            "% Usage": data["default_cpu"]["utilization"],
-            "% Memory": data["default_cpu"]["memory"]["current"] /
-                data["default_cpu"]["memory"]["max"],
-          },
-        );
+        setChartData("cpu", {
+          "% Usage": data["default_cpu"]["utilization"],
+          "% Memory": 100 *
+              data["default_cpu"]["memory"]["current"] /
+              data["default_cpu"]["memory"]["max"],
+        }, {
+          "name": data["default_cpu"]["name"],
+          "temperature": data["default_cpu"]["temperature"],
+        });
 
-        setChartData(
-          "gpu",
-          data["default_nvidia_gpu"]["0"]["name"],
-          {
-            "% Usage": data["default_nvidia_gpu"]["0"]["utilization"],
-            "% Memory": data["default_nvidia_gpu"]["0"]["memory"]["current"] /
-                data["default_nvidia_gpu"]["0"]["memory"]["max"],
-          },
-        );
+        setChartData("gpu", {
+          "% Usage": data["default_nvidia_gpu"]["0"]["utilization"],
+          "% Memory": 100 *
+              data["default_nvidia_gpu"]["0"]["memory"]["current"] /
+              data["default_nvidia_gpu"]["0"]["memory"]["max"],
+        }, {
+          "name": data["default_nvidia_gpu"]["0"]["name"],
+          "temperature": data["default_nvidia_gpu"]["0"]["temperature"],
+        });
 
         currentX++;
       });
@@ -265,29 +275,33 @@ class _MyHomePageState extends State<MyHomePage> {
         offline = true;
         offlineStatus = e.toString();
       });
-      Wakelock.disable();
+      // Wakelock.disable();
     }
   }
 
-  void setChartData(String key, String name, Map<String, double> currentValues,
-      [double? minY, double? maxY]) {
+  void setChartData(String key, Map<String, double> currentValues,
+      Map<String, dynamic> immediateValues) {
     if (!chartsData.containsKey(key)) chartsData[key] = Map<String, dynamic>();
 
-    chartsData[key]["name"] = name;
-    chartsData[key]["minY"] = minY ?? 0.0;
-    chartsData[key]["maxY"] = maxY ?? 100.0;
+    chartsData[key]["name"] = immediateValues["name"];
+    chartsData[key]["minY"] =
+        immediateValues.containsKey("minY") ? immediateValues["minY"] : 0.0;
+    chartsData[key]["maxY"] =
+        immediateValues.containsKey("maxY") ? immediateValues["maxY"] : 100.0;
+
+    chartsData[key]["temperature"] = immediateValues["temperature"];
 
     currentValues.forEach((title, value) {
       if (!chartsData[key].containsKey("traces"))
-        chartsData[key]["traces"] = {};
-      if (!chartsData[key].containsKey(title))
+        chartsData[key]["traces"] = Map<String, dynamic>();
+      if (!chartsData[key]["traces"].containsKey(title))
         chartsData[key]["traces"][title] = <FlSpot>[];
 
       while (chartsData[key]["traces"][title].length > limitCount) {
         chartsData[key]["traces"][title].removeAt(0);
       }
 
-      chartsData[key][title].add(FlSpot(currentX, value));
+      chartsData[key]["traces"][title].add(FlSpot(currentX, value));
     });
   }
 }

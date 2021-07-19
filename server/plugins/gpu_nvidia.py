@@ -49,6 +49,7 @@ class GPUPlugin(PluginInterface):
             gpus_info[int(info["index"])] = {
                 "name": info["name"],
                 "utilization": float(info["utilization.gpu"]),
+                "temperature": float(info["temperature.gpu"]),
                 "memory": {
                     "max": float(info["memory.total"]),
                     "current": float(info["memory.used"]),

@@ -20,7 +20,7 @@ class CPUPlugin(PluginInterface):
         freq = psutil.cpu_freq()
         mem = psutil.virtual_memory()
         return {
-            "name": cpuinfo.get_cpu_info()["brand_raw"],
+            "name": " ".join(cpuinfo.get_cpu_info()["brand_raw"].split(" ")[:4]),
             "utilization": psutil.cpu_percent(interval=None),
             "memory": {
                 "max": mem.total / (1024 ** 2),
@@ -32,4 +32,5 @@ class CPUPlugin(PluginInterface):
                 "max": freq.max,
                 "min": freq.min,
             },
+            "temperature": psutil.sensors_temperatures()["k10temp"][0].current,
         }

@@ -1,5 +1,6 @@
 import inspect
 import logging
+import os
 import pkgutil
 from flask import Flask
 from plugin_interface import PluginInterface
@@ -28,6 +29,10 @@ except Exception as e:
     print(e)
 
 print("Plugins:", plugins)
+
+print("Waking up device")
+os.popen("./adb shell input keyevent KEYCODE_WAKEUP")
+print("Starting server...")
 
 
 @app.route("/")
