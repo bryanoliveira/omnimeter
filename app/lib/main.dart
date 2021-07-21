@@ -80,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
     SystemChrome.setEnabledSystemUIOverlays([]);
 
     timer = Timer.periodic(
-        Duration(milliseconds: 2000), (Timer t) => fetchCpuData());
+        Duration(milliseconds: 5000), (Timer t) => fetchCpuData());
   }
 
   @override
