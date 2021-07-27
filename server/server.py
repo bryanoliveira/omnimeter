@@ -2,10 +2,13 @@ import inspect
 import logging
 import os
 import pkgutil
+import threading
+
 from flask import Flask
+import PySimpleGUIQt as sg
+
 from plugin_interface import PluginInterface
 
-# TODO add tray icon with pystray
 
 app = Flask(__name__)
 plugins = []
@@ -39,6 +42,16 @@ def get_plugins():
     }
 
 
+def system_tray():
+    tray = sg.SystemTray(
+        menu=["BLANK", ["E&xit"]], filename="icon.svg", tooltip="OmniMeter"
+    )
+    while True:
+        menu_item = tray.Read()
+        if menu_item == "Exit":
+            os._exit(0)
+
+
 if __name__ == "__main__":
     try:
         for loader, modname, _ in pkgutil.walk_packages(path=["./plugins"]):
@@ -60,7 +73,20 @@ if __name__ == "__main__":
 
     print("Plugins:", plugins)
 
+    print("Starting system tray...")
+    tray = threading.Thread(target=system_tray, args=())
+    tray.start()
+
     print("Waking up device")
     os.popen("adb shell input keyevent KEYCODE_WAKEUP")
+
     print("Starting server...")
-    app.run(host="0.0.0.0", port="5000", use_reloader=True, use_debugger=True)
+    app.run(
+        host="0.0.0.0",
+        port="5000",
+        threaded=False,
+        processes=1,
+        # this are required to run a single instance
+        use_reloader=False,
+        use_debugger=False,
+    )
