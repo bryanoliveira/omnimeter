@@ -1,0 +1,14 @@
+[Unit]
+Description=OmniMeter Service
+After=systemd-user-sessions.service
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=5
+User=bryan
+EnvironmentFile=<OMNIMETERFOLDER>/sysenv
+ExecStart=<OMNIMETERFOLDER>/run.sh
+
+[Install]
+WantedBy=multi-user.target
