@@ -10,3 +10,4 @@ pathspec==0.8.1
 psutil==5.8.0
 py-cpuinfo==8.0.0
 Werkzeug==2.0.1
+PySimpleGUIQt==0.35.0
