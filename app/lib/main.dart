@@ -171,10 +171,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                       child: Text(
                                         chartsData["cpu"]["frequency"]
                                                 .toStringAsFixed(0) +
-                                            " MHz  |  " +
-                                            chartsData["gpu"]["fps"]
-                                                .toString() +
-                                            " FPS",
+                                            " MHz" +
+                                            (chartsData["gpu"]["fps"] > 0
+                                                ? "  |  " +
+                                                    chartsData["gpu"]["fps"]
+                                                        .toString() +
+                                                    " FPS"
+                                                : ""),
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
                                           color: Colors.grey[800],
