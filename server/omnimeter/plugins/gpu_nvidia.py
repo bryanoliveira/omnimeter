@@ -47,7 +47,7 @@ class GPUPlugin(PluginInterface):
         gpus_info = {}
         for info in data:
             gpus_info[int(info["index"])] = {
-                "name": info["name"],
+                "name": info["name"].replace('NVIDIA ',''),
                 "utilization": float(info["utilization.gpu"]),
                 "temperature": float(info["temperature.gpu"]),
                 "memory": {

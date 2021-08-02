@@ -13,9 +13,9 @@ if os.name == 'nt':
 
     handle = None
     stats = {
-        "cpu_temp": 0,
+        "cpu_temp": 0.0,
         "cpu_clocks": [],
-        "cpu_clock": 0,
+        "cpu_clock": 0.0,
     }
 
     clr.AddReference(os.path.abspath('./lib/windows/OpenHardwareMonitorLib.dll'))
@@ -47,7 +47,8 @@ if os.name == 'nt':
                 for subsensor in j.Sensors:
                     print("subsensor", (subsensor.Index, subsensor.Hardware.HardwareType, subsensor.SensorType, subsensor.Hardware.Name, subsensor.Name, subsensor.Value))
 
-        stats["cpu_clock"] = sum(stats["cpu_clocks"]) / len(stats["cpu_clocks"])
+        if len(stats["cpu_clocks"]) > 0:
+            stats["cpu_clock"] = sum(stats["cpu_clocks"]) / len(stats["cpu_clocks"])
 
     def get_cpu_temperature() -> float:
         return stats["cpu_temp"]
