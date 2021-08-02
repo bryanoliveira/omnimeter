@@ -33,17 +33,7 @@ if os.name == "nt":
         for i in handle.Hardware:
             i.Update()
             for sensor in i.Sensors:
-                print(
-                    "sensors",
-                    (
-                        sensor.Index,
-                        sensor.Hardware.HardwareType,
-                        sensor.SensorType,
-                        sensor.Hardware.Name,
-                        sensor.Name,
-                        sensor.Value,
-                    ),
-                )
+                # print("sensors", (sensor.Index, sensor.Hardware.HardwareType, sensor.SensorType, sensor.Hardware.Name, sensor.Name, sensor.Value))
                 if sensor.Hardware.HardwareType == 2:
                     if (
                         sensor.SensorType == 1 and "CPU Core" in sensor.Name
