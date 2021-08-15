@@ -68,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Map<String, dynamic> chartsData = Map<String, dynamic>();
   double currentX = 0;
   Timer? timer;
+  int errorCount = 0;
 
   @override
   void initState() {
@@ -295,6 +296,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
       Wakelock.enable();
       offline = false;
+      errorCount = 0;
 
       Map<String, dynamic> data = jsonDecode(response.body);
 
@@ -332,11 +334,14 @@ class _MyHomePageState extends State<MyHomePage> {
         currentX++;
       });
     } catch (e) {
-      setState(() {
-        offline = true;
-        offlineStatus = e.toString();
-      });
-      Wakelock.disable();
+      errorCount++;
+      if (errorCount > 2) {
+        setState(() {
+          offline = true;
+          offlineStatus = e.toString();
+        });
+        Wakelock.disable();
+      }
     }
   }
 
