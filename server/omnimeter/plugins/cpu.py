@@ -8,17 +8,17 @@ import psutil
 
 
 ### WINDOWS
-if os.name == 'nt':
-    import clr #package pythonnet, not clr
+if os.name == "nt":
+    import clr  # package pythonnet, not clr
 
     handle = None
     stats = {
-        "cpu_temp": 0,
+        "cpu_temp": 0.0,
         "cpu_clocks": [],
-        "cpu_clock": 0,
+        "cpu_clock": 0.0,
     }
 
-    clr.AddReference(os.path.abspath('./lib/windows/OpenHardwareMonitorLib.dll'))
+    clr.AddReference(os.path.abspath("./lib/windows/OpenHardwareMonitorLib.dll"))
     from OpenHardwareMonitor import Hardware
 
     handle = Hardware.Computer()
@@ -35,28 +35,49 @@ if os.name == 'nt':
             for sensor in i.Sensors:
                 # print("sensors", (sensor.Index, sensor.Hardware.HardwareType, sensor.SensorType, sensor.Hardware.Name, sensor.Name, sensor.Value))
                 if sensor.Hardware.HardwareType == 2:
-                    if sensor.SensorType == 1 and "CPU Core" in sensor.Name: # 2 = Temperature
+                    if (
+                        sensor.SensorType == 1 and "CPU Core" in sensor.Name
+                    ):  # 1 = Clock
                         if len(stats["cpu_clocks"]) < sensor.Index:
                             stats["cpu_clocks"].append(float(sensor.Value))
                         else:
                             stats["cpu_clocks"][sensor.Index - 1] = float(sensor.Value)
-                    elif sensor.SensorType == 2 and "CPU Package" in sensor.Name:
+                    elif (
+                        sensor.SensorType == 2 and "CPU Package" in sensor.Name
+                    ):  # 2 = Temperature
                         stats["cpu_temp"] = float(sensor.Value)
             for j in i.SubHardware:
                 j.Update()
                 for subsensor in j.Sensors:
-                    print("subsensor", (subsensor.Index, subsensor.Hardware.HardwareType, subsensor.SensorType, subsensor.Hardware.Name, subsensor.Name, subsensor.Value))
+                    print(
+                        "subsensor",
+                        (
+                            subsensor.Index,
+                            subsensor.Hardware.HardwareType,
+                            subsensor.SensorType,
+                            subsensor.Hardware.Name,
+                            subsensor.Name,
+                            subsensor.Value,
+                        ),
+                    )
 
-        stats["cpu_clock"] = sum(stats["cpu_clocks"]) / len(stats["cpu_clocks"])
+        if len(stats["cpu_clocks"]) > 0:
+            stats["cpu_clock"] = sum(stats["cpu_clocks"]) / len(stats["cpu_clocks"])
 
     def get_cpu_temperature() -> float:
         return stats["cpu_temp"]
 
     def get_cpu_clock() -> float:
-        return (stats["cpu_clock"], 0, 5)
+        if stats["cpu_clock"] > 0:
+            return (stats["cpu_clock"], 0, 5)
+        else:
+            freq = psutil.cpu_freq()
+            return (freq.current, freq.min, freq.max)
+
 
 ### POSIX
 else:
+
     def fetch_stats():
         pass
 
@@ -66,6 +87,7 @@ else:
     def get_cpu_clock() -> float:
         freq = psutil.cpu_freq()
         return (freq.current, freq.min, freq.max)
+
 
 class CPUPlugin(PluginInterface):
     def get_id(self):
