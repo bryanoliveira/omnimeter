@@ -360,13 +360,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   height: 8,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: coreUsage < 25
-                        ? Colors.green[600]
-                        : (coreUsage < 50
-                            ? Colors.yellow[600]
-                            : (coreUsage < 75
-                                ? Colors.orange[600]
-                                : Colors.red[600])),
+                    color: coreUsage < 20
+                        ? Colors.grey[800]
+                        : (coreUsage < 40
+                            ? Colors.green[600]
+                            : (coreUsage < 60
+                                ? Colors.yellow[600]
+                                : (coreUsage < 80
+                                    ? Colors.orange[600]
+                                    : Colors.red[600]))),
                   ),
                 ),
               ),
