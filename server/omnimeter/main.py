@@ -12,13 +12,22 @@ from plugin_interface import PluginInterface
 
 app = Flask(__name__)
 plugins = []
+wake_count = -1
 
+
+def wake_device(device="0033676464"):
+    global wake_count
+    if (wake_count := wake_count + 1) % 10 == 0:
+        # print("Waking device: {}".format(device))
+        os.popen(f"adb -s {device} shell input keyevent KEYCODE_WAKEUP")
+        wake_count = 0
 
 @app.route("/")
 def get_stats():
     """
     Gets stats dicts from all modules in plugins folder
     """
+    wake_device()
     stats = {}
     for plugin in plugins:
         stats = {
@@ -78,7 +87,7 @@ if __name__ == "__main__":
     tray.start()
 
     print("Waking up device")
-    os.popen("adb shell input keyevent KEYCODE_WAKEUP")
+    wake_device()
 
     print("Starting server...")
     app.run(

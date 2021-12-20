@@ -172,18 +172,38 @@ class _MyHomePageState extends State<MyHomePage> {
                                       child: Text(
                                         chartsData["cpu"]["frequency"]
                                                 .toStringAsFixed(0) +
-                                            " MHz" +
-                                            (chartsData["gpu"]["fps"] > 0
-                                                ? "  |  " +
-                                                    chartsData["gpu"]["fps"]
-                                                        .toString() +
-                                                    " FPS"
-                                                : ""),
+                                            " MHz",
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
                                           color: Colors.grey[800],
                                           fontSize: 22,
                                         ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(
+                                        left: 25.0,
+                                        bottom: 18,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: chartsData["cpu"]
+                                                ["coreUsageWidgets0"],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: chartsData["cpu"]
+                                                ["coreUsageWidgets1"],
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -248,7 +268,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                             " MHz  |  " +
                                             chartsData["gpu"]["power"]
                                                 .toStringAsFixed(0) +
-                                            " W",
+                                            " W" +
+                                            (chartsData["gpu"]["fps"] > 0
+                                                ? "  |  " +
+                                                    chartsData["gpu"]["fps"]
+                                                        .toString() +
+                                                    " FPS"
+                                                : ""),
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
                                           color: Colors.grey[800],
@@ -290,7 +316,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void fetchCpuData() async {
     try {
       final response = await http
-          .get(Uri.parse('http://192.168.0.4:5000'))
+          .get(Uri.parse('http://192.168.0.12:5000'))
           .timeout(const Duration(seconds: 5));
       if (response.statusCode != 200) throw new Exception(response.statusCode);
 
@@ -307,29 +333,61 @@ class _MyHomePageState extends State<MyHomePage> {
       // called again, and so nothing would appear to happen.
 
       setState(() {
-        setChartData("cpu", {
-          "% Usage": data["default_cpu"]["utilization"],
-          "% Memory": 100 *
-              data["default_cpu"]["memory"]["current"] /
-              data["default_cpu"]["memory"]["max"],
-        }, {
-          "name": data["default_cpu"]["name"],
-          "temperature": data["default_cpu"]["temperature"],
-          "frequency": data["default_cpu"]["frequency"]["current"],
-        });
+        if (data.containsKey("default_cpu")) {
+          setChartData("cpu", {
+            "% Usage": data["default_cpu"]["utilization"],
+            "% Memory": 100 *
+                data["default_cpu"]["memory"]["current"] /
+                data["default_cpu"]["memory"]["max"],
+          }, {
+            "name": data["default_cpu"]["name"],
+            "temperature": data["default_cpu"]["temperature"],
+            "frequency": data["default_cpu"]["frequency"]["current"],
+          });
+          // add two lines of core usage indicators
+          chartsData["cpu"]["coreUsageWidgets0"] = <Widget>[];
+          chartsData["cpu"]["coreUsageWidgets1"] = <Widget>[];
+          for (int i = 0; i < data["default_cpu"]["core_usage"].length; i++) {
+            var coreUsage = data["default_cpu"]["core_usage"][i];
+            chartsData["cpu"]["coreUsageWidgets" + (i % 2).toString()].add(
+              Padding(
+                padding: EdgeInsets.only(
+                  left: 5.0,
+                  bottom: 5.0,
+                ),
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: coreUsage < 25
+                        ? Colors.green[600]
+                        : (coreUsage < 50
+                            ? Colors.yellow[600]
+                            : (coreUsage < 75
+                                ? Colors.orange[600]
+                                : Colors.red[600])),
+                  ),
+                ),
+              ),
+            );
+          }
+        }
 
-        setChartData("gpu", {
-          "% Usage": data["default_nvidia_gpu"]["0"]["utilization"],
-          "% Memory": 100 *
-              data["default_nvidia_gpu"]["0"]["memory"]["current"] /
-              data["default_nvidia_gpu"]["0"]["memory"]["max"],
-        }, {
-          "name": data["default_nvidia_gpu"]["0"]["name"],
-          "temperature": data["default_nvidia_gpu"]["0"]["temperature"],
-          "fps": data["default_nvidia_gpu"]["0"]["fps"],
-          "frequency": data["default_nvidia_gpu"]["0"]["frequency"]["current"],
-          "power": data["default_nvidia_gpu"]["0"]["power"]["current"],
-        });
+        if (data.containsKey("default_nvidia_gpu"))
+          setChartData("gpu", {
+            "% Usage": data["default_nvidia_gpu"]["0"]["utilization"],
+            "% Memory": 100 *
+                data["default_nvidia_gpu"]["0"]["memory"]["current"] /
+                data["default_nvidia_gpu"]["0"]["memory"]["max"],
+          }, {
+            "name": data["default_nvidia_gpu"]["0"]["name"],
+            "temperature": data["default_nvidia_gpu"]["0"]["temperature"],
+            "fps": data["default_nvidia_gpu"]["0"]["fps"],
+            "frequency": data["default_nvidia_gpu"]["0"]["frequency"]
+                ["current"],
+            "power": data["default_nvidia_gpu"]["0"]["power"]["current"],
+          });
 
         currentX++;
       });

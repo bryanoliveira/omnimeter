@@ -112,10 +112,7 @@ class CPUPlugin(PluginInterface):
                 "current": (mem.total - mem.available) / (1024 ** 2),
                 "available": mem.available / (1024 ** 2),
             },
-            "frequency": {
-                "current": clock,
-                "max": clock_max,
-                "min": clock_min,
-            },
+            "frequency": {"current": clock, "max": clock_max, "min": clock_min,},
             "temperature": get_cpu_temperature(),
+            "core_usage": psutil.cpu_percent(interval=None, percpu=True),
         }
