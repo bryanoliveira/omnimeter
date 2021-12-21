@@ -17,7 +17,8 @@ wake_count = -1
 
 def wake_device(device="0033676464"):
     global wake_count
-    if (wake_count := wake_count + 1) % 10 == 0:
+    wake_count += 1
+    if wake_count % 10 == 0:
         # print("Waking device: {}".format(device))
         os.popen(f"adb -s {device} shell input keyevent KEYCODE_WAKEUP")
         wake_count = 0
