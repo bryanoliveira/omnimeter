@@ -80,8 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ]);
     SystemChrome.setEnabledSystemUIOverlays([]);
 
-    timer = Timer.periodic(
-        Duration(milliseconds: 5000), (Timer t) => fetchCpuData());
+    fetchCpuData();
   }
 
   @override
@@ -403,6 +402,10 @@ class _MyHomePageState extends State<MyHomePage> {
         Wakelock.disable();
       }
     }
+    // call this function again after some time
+    Timer(Duration(seconds: 5), () {
+      fetchCpuData();
+    });
   }
 
   void setChartData(String key, Map<String, double> currentValues,
