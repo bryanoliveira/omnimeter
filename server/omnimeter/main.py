@@ -10,7 +10,7 @@ import PySimpleGUIQt as sg
 from plugin_interface import PluginInterface
 
 app = Flask(__name__)
-logger = logging.getLogger('werkzeug')
+logger = logging.getLogger("werkzeug")
 logger.setLevel(logging.ERROR)
 
 plugins = []
@@ -20,9 +20,16 @@ wake_count = -1
 def wake_device(device="0033676464"):
     global wake_count
     if (wake_count := wake_count + 1) % 10 == 0:
-        logger.debug("Waking device: {}".format(device))
-        os.popen(f"adb -s {device} shell input keyevent KEYCODE_WAKEUP")
+        logger.info("Waking device: {}".format(device))
+        adb_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "lib",
+            "windows" if os.name == "nt" else "linux",
+            "adb",
+        )
+        os.popen(f"{adb_path} -s {device} shell input keyevent KEYCODE_WAKEUP")
         wake_count = 0
+
 
 @app.route("/")
 def get_stats():
