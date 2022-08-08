@@ -315,9 +315,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void fetchCpuData() async {
     try {
-      final response = await http
-          .get(Uri.parse('http://192.168.0.12:5000'))
-          .timeout(const Duration(seconds: 5));
+      final response =
+          await http.get(Uri.parse('http://192.168.0.12:5000'), headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE, HEAD"
+      }).timeout(const Duration(seconds: 5));
       if (response.statusCode != 200) throw new Exception(response.statusCode);
 
       Wakelock.enable();

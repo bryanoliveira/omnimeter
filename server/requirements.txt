@@ -2,6 +2,7 @@ appdirs==1.4.4
 certifi==2021.5.30
 click==8.0.1
 Flask==2.0.1
+flask_cors==3.0.10
 itsdangerous==2.0.1
 Jinja2==3.0.1
 MarkupSafe==2.0.1

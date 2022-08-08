@@ -5,11 +5,14 @@ import pkgutil
 import threading
 
 from flask import Flask
+from flask_cors import CORS
+
 import PySimpleGUIQt as sg
 
 from plugin_interface import PluginInterface
 
 app = Flask(__name__)
+CORS(app)
 logger = logging.getLogger("werkzeug")
 logger.setLevel(logging.ERROR)
 
