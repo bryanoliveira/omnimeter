@@ -2,12 +2,9 @@ import inspect
 import logging
 import os
 import pkgutil
-import threading
 
 from flask import Flask
 from flask_cors import CORS
-
-import PySimpleGUIQt as sg
 
 from plugin_interface import PluginInterface
 
@@ -22,7 +19,8 @@ wake_count = -1
 
 def wake_device(device="0033676464"):
     global wake_count
-    if (wake_count := wake_count + 1) % 10 == 0:
+    wake_count += 1
+    if wake_count % 10 == 0:
         logger.info("Waking device: {}".format(device))
         adb_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
@@ -63,16 +61,6 @@ def get_plugins():
     }
 
 
-def system_tray():
-    tray = sg.SystemTray(
-        menu=["BLANK", ["E&xit"]], filename="icon.svg", tooltip="OmniMeter"
-    )
-    while True:
-        menu_item = tray.Read()
-        if menu_item == "Exit":
-            os._exit(0)
-
-
 if __name__ == "__main__":
     try:
         for loader, modname, _ in pkgutil.walk_packages(path=["./plugins"]):
@@ -93,10 +81,6 @@ if __name__ == "__main__":
         logger.error(e)
 
     logger.info("Plugins:", plugins)
-
-    logger.info("Starting system tray...")
-    tray = threading.Thread(target=system_tray, args=())
-    tray.start()
 
     logger.info("Waking up device")
     wake_device()
