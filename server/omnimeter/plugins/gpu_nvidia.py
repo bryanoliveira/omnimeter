@@ -29,7 +29,7 @@ class GPUPlugin(PluginInterface):
             + "clocks.current.memory,"
             + "clocks.max.memory,"
             + "pstate,"
-            + " --format=csv,nounits -l1"
+            + " --format=csv,nounits"
         )
         print("GPU command:", self.cmd)
 

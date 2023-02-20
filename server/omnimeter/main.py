@@ -17,27 +17,11 @@ plugins = []
 wake_count = -1
 
 
-def wake_device(device="0033676464"):
-    global wake_count
-    wake_count += 1
-    if wake_count % 10 == 0:
-        logger.info("Waking device: {}".format(device))
-        adb_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)),
-            "lib",
-            "windows" if os.name == "nt" else "linux",
-            "adb",
-        )
-        os.popen(f"{adb_path} -s {device} shell input keyevent KEYCODE_WAKEUP")
-        wake_count = 0
-
-
 @app.route("/")
 def get_stats():
     """
     Gets stats dicts from all modules in plugins folder
     """
-    wake_device()
     stats = {}
     for plugin in plugins:
         stats = {
@@ -81,9 +65,6 @@ if __name__ == "__main__":
         logger.error(e)
 
     logger.info("Plugins:", plugins)
-
-    logger.info("Waking up device")
-    wake_device()
 
     logger.info("Starting server...")
     app.run(
