@@ -45,7 +45,7 @@ class CommonLineChart extends StatelessWidget {
           ),
           child: Indicator(
             color: colors[idx],
-            text: title,
+            text: title + " (" + trace.last.y.toStringAsFixed(1) + ")",
             isSquare: false,
             size: 12,
             textColor: Colors.grey,
