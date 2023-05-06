@@ -11,6 +11,7 @@ import 'package:fl_chart/fl_chart.dart';
 
 import 'charts/line.dart';
 import 'charts/temp_bar.dart';
+import 'charts/pie.dart';
 
 void main() {
   runApp(MyApp());
@@ -144,8 +145,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               )
             : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Row(
                     children: [
@@ -224,16 +225,32 @@ class _MyHomePageState extends State<MyHomePage> {
                             : <Widget>[],
                       ),
                       Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Padding(
-                            padding: EdgeInsets.only(
-                              top: 50,
+                          Container(
+                            width: 100,
+                            height: 35,
+                            transform: Matrix4.translationValues(0, -7, 0),
+                            child: Wrap(
+                              direction: Axis.horizontal,
+                              alignment: WrapAlignment.center,
+                              runAlignment: WrapAlignment.spaceEvenly,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: chartsData["cpu"]["diskUsageWidgets"],
                             ),
-                            child: TemperatureBarChart(
-                              temperature: chartsData["cpu"]["temperature"],
-                            ),
+                          ),
+                          Row(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  top: 15,
+                                ),
+                                child: TemperatureBarChart(
+                                  temperature: chartsData["cpu"]["temperature"],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -276,13 +293,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             " MHz  |  " +
                                             chartsData["gpu"]["power"]
                                                 .toStringAsFixed(0) +
-                                            " W" +
-                                            (chartsData["gpu"]["fps"] > 0
-                                                ? "  |  " +
-                                                    chartsData["gpu"]["fps"]
-                                                        .toString() +
-                                                    " FPS"
-                                                : ""),
+                                            " W",
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
                                           color: Colors.grey[800],
@@ -301,7 +312,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Padding(
                             padding: EdgeInsets.only(
@@ -406,6 +417,14 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           }
         }
+        chartsData["cpu"]["diskUsageWidgets"] = <Widget>[];
+        data["default_cpu"]["disks"].forEach((disk, usage) {
+          chartsData["cpu"]["diskUsageWidgets"].add(
+            DiskPieChart(
+              percentage: usage,
+            ),
+          );
+        });
 
         if (data.containsKey("default_nvidia_gpu"))
           setChartData("gpu", {
@@ -413,10 +432,12 @@ class _MyHomePageState extends State<MyHomePage> {
             "% Memory": 100 *
                 data["default_nvidia_gpu"]["0"]["memory"]["current"] /
                 data["default_nvidia_gpu"]["0"]["memory"]["max"],
+            "% Power": 100 *
+                data["default_nvidia_gpu"]["0"]["power"]["current"] /
+                data["default_nvidia_gpu"]["0"]["power"]["max"],
           }, {
             "name": data["default_nvidia_gpu"]["0"]["name"],
             "temperature": data["default_nvidia_gpu"]["0"]["temperature"],
-            "fps": data["default_nvidia_gpu"]["0"]["fps"],
             "frequency": data["default_nvidia_gpu"]["0"]["frequency"]
                 ["current"],
             "power": data["default_nvidia_gpu"]["0"]["power"]["current"],

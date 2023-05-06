@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'indicator.dart';
 
@@ -62,7 +61,7 @@ class CommonLineChart extends StatelessWidget {
             children: <Widget>[
               Container(
                 width: 540,
-                height: 100,
+                height: 105,
                 child: LineChart(
                   LineChartData(
                     minY: minY,
