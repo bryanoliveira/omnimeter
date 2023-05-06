@@ -103,6 +103,7 @@ class CPUPlugin(PluginInterface):
         fetch_stats()
         clock, clock_min, clock_max = get_cpu_clock()
         mem = psutil.virtual_memory()
+        swap = psutil.swap_memory()
 
         return {
             "name": " ".join(cpuinfo.get_cpu_info()["brand_raw"].split(" ")[:4]),
@@ -111,6 +112,11 @@ class CPUPlugin(PluginInterface):
                 "max": mem.total / (1024 ** 2),
                 "current": (mem.total - mem.available) / (1024 ** 2),
                 "available": mem.available / (1024 ** 2),
+            },
+            "swap": {
+                "max": swap.total / (1024 ** 2),
+                "current": (swap.total - swap.free) / (1024 ** 2),
+                "available": swap.free / (1024 ** 2),
             },
             "frequency": {"current": clock, "max": clock_max, "min": clock_min,},
             "temperature": get_cpu_temperature(),
