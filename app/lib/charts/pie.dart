@@ -9,9 +9,9 @@ class DiskPieChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color color;
-    if (percentage > 90)
+    if (percentage > 95)
       color = Colors.red;
-    else if (percentage > 80)
+    else if (percentage > 90)
       color = Colors.orange;
     else
       color = Colors.white;
@@ -26,16 +26,17 @@ class DiskPieChart extends StatelessWidget {
           ),
           sectionsSpace: 0,
           centerSpaceRadius: 0,
+          startDegreeOffset: -90,
           sections: [
             PieChartSectionData(
-              value: 100 - percentage,
-              color: Color(0x33ffffff),
+              value: percentage,
+              color: color,
               showTitle: false,
               radius: 10,
             ),
             PieChartSectionData(
-              value: percentage,
-              color: color,
+              value: 100 - percentage,
+              color: Color(0x33ffffff),
               showTitle: false,
               radius: 10,
             ),
