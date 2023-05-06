@@ -21,7 +21,7 @@ class CommonLineChart extends StatelessWidget {
     final List<Color> colors = [
       Colors.redAccent,
       Colors.blueAccent,
-      Colors.yellowAccent,
+      Colors.deepPurpleAccent,
     ];
 
     int idx = 0;

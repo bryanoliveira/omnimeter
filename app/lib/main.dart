@@ -65,7 +65,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String serverURL = 'http://192.168.0.12:5000';
   TextEditingController _textFieldController = TextEditingController();
-  
+
   final limitCount = 100;
   bool offline = true;
   String offlineStatus = "";
@@ -113,34 +113,37 @@ class _MyHomePageState extends State<MyHomePage> {
 
     SystemChrome.setEnabledSystemUIOverlays([]);
     return Scaffold(
-      body: InkWell(
-        onTap: () {_displayTextInputDialog(context);},
+      body: GestureDetector(
+        onTap: () {
+          _displayTextInputDialog(context);
+        },
+        behavior: HitTestBehavior.opaque,
         child: offline
-              ? Center(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "OFFLINE",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        offlineStatus,
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.grey[800],
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold),
-                      )
-                    ],
-                  ),
-                )
-              : Column(
+            ? Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "OFFLINE",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      offlineStatus,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          color: Colors.grey[800],
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold),
+                    )
+                  ],
+                ),
+              )
+            : Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
@@ -324,24 +327,22 @@ class _MyHomePageState extends State<MyHomePage> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('Server URL'),
-            content: TextField(
-              onChanged: (value) {
-                setState(() {
-                  serverURL = value;
-                });
-              },
-              controller: _textFieldController,
-              decoration: InputDecoration(hintText: serverURL),
-            )
-          );
+              title: Text('Server URL'),
+              content: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    serverURL = value;
+                  });
+                },
+                controller: _textFieldController,
+                decoration: InputDecoration(hintText: serverURL),
+              ));
         });
   }
 
   void fetchCpuData() async {
     try {
-      final response =
-          await http.get(Uri.parse(serverURL), headers: {
+      final response = await http.get(Uri.parse(serverURL), headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE, HEAD"
       }).timeout(const Duration(seconds: 5));
@@ -366,6 +367,9 @@ class _MyHomePageState extends State<MyHomePage> {
             "% Memory": 100 *
                 data["default_cpu"]["memory"]["current"] /
                 data["default_cpu"]["memory"]["max"],
+            "% Swap": 100 *
+                data["default_cpu"]["swap"]["current"] /
+                data["default_cpu"]["swap"]["max"],
           }, {
             "name": data["default_cpu"]["name"],
             "temperature": data["default_cpu"]["temperature"],
