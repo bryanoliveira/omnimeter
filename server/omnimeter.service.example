@@ -6,7 +6,7 @@ After=systemd-user-sessions.service
 Type=simple
 Restart=on-failure
 RestartSec=5
-User=bryan
+User=<OMNIMETERUSER>
 EnvironmentFile=<OMNIMETERFOLDER>/sysenv
 ExecStart=<OMNIMETERFOLDER>/run.sh
 

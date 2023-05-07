@@ -103,6 +103,12 @@ class CPUPlugin(PluginInterface):
         fetch_stats()
         clock, clock_min, clock_max = get_cpu_clock()
         mem = psutil.virtual_memory()
+        swap = psutil.swap_memory()
+        disks = {
+            p.mountpoint: psutil.disk_usage(p.mountpoint).percent
+            for p in psutil.disk_partitions()
+            if p.fstype not in ("squashfs", "vfat")
+        }
 
         return {
             "name": " ".join(cpuinfo.get_cpu_info()["brand_raw"].split(" ")[:4]),
@@ -112,6 +118,12 @@ class CPUPlugin(PluginInterface):
                 "current": (mem.total - mem.available) / (1024 ** 2),
                 "available": mem.available / (1024 ** 2),
             },
+            "swap": {
+                "max": swap.total / (1024 ** 2),
+                "current": (swap.total - swap.free) / (1024 ** 2),
+                "available": swap.free / (1024 ** 2),
+            },
+            "disks": disks,
             "frequency": {"current": clock, "max": clock_max, "min": clock_min,},
             "temperature": get_cpu_temperature(),
             "core_usage": psutil.cpu_percent(interval=None, percpu=True),

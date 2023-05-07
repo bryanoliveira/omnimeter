@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'indicator.dart';
 
@@ -21,7 +20,7 @@ class CommonLineChart extends StatelessWidget {
     final List<Color> colors = [
       Colors.redAccent,
       Colors.blueAccent,
-      Colors.yellowAccent,
+      Colors.deepPurpleAccent,
     ];
 
     int idx = 0;
@@ -45,7 +44,7 @@ class CommonLineChart extends StatelessWidget {
           ),
           child: Indicator(
             color: colors[idx],
-            text: title,
+            text: title + " (" + trace.last.y.toStringAsFixed(1) + ")",
             isSquare: false,
             size: 12,
             textColor: Colors.grey,
@@ -62,7 +61,7 @@ class CommonLineChart extends StatelessWidget {
             children: <Widget>[
               Container(
                 width: 540,
-                height: 100,
+                height: 105,
                 child: LineChart(
                   LineChartData(
                     minY: minY,

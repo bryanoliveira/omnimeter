@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:fl_chart/fl_chart.dart';
 
 import 'charts/line.dart';
 import 'charts/temp_bar.dart';
+import 'charts/pie.dart';
 
 void main() {
   runApp(MyApp());
@@ -62,6 +64,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String serverURL = 'http://192.168.0.12:5000';
+  TextEditingController _textFieldController = TextEditingController();
+
   final limitCount = 100;
   bool offline = true;
   String offlineStatus = "";
@@ -80,8 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ]);
     SystemChrome.setEnabledSystemUIOverlays([]);
 
-    timer = Timer.periodic(
-        Duration(milliseconds: 5000), (Timer t) => fetchCpuData());
+    fetchCpuData();
   }
 
   @override
@@ -108,8 +112,13 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
+    SystemChrome.setEnabledSystemUIOverlays([]);
     return Scaffold(
-      body: Container(
+      body: GestureDetector(
+        onTap: () {
+          _displayTextInputDialog(context);
+        },
+        behavior: HitTestBehavior.opaque,
         child: offline
             ? Center(
                 child: Column(
@@ -136,8 +145,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               )
             : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: <Widget>[
                   Row(
                     children: [
@@ -216,16 +225,32 @@ class _MyHomePageState extends State<MyHomePage> {
                             : <Widget>[],
                       ),
                       Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Padding(
-                            padding: EdgeInsets.only(
-                              top: 50,
+                          Container(
+                            width: 100,
+                            height: 35,
+                            transform: Matrix4.translationValues(0, -7, 0),
+                            child: Wrap(
+                              direction: Axis.horizontal,
+                              alignment: WrapAlignment.center,
+                              runAlignment: WrapAlignment.spaceEvenly,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: chartsData["cpu"]["diskUsageWidgets"],
                             ),
-                            child: TemperatureBarChart(
-                              temperature: chartsData["cpu"]["temperature"],
-                            ),
+                          ),
+                          Row(
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  top: 15,
+                                ),
+                                child: TemperatureBarChart(
+                                  temperature: chartsData["cpu"]["temperature"],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -268,13 +293,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                             " MHz  |  " +
                                             chartsData["gpu"]["power"]
                                                 .toStringAsFixed(0) +
-                                            " W" +
-                                            (chartsData["gpu"]["fps"] > 0
-                                                ? "  |  " +
-                                                    chartsData["gpu"]["fps"]
-                                                        .toString() +
-                                                    " FPS"
-                                                : ""),
+                                            " W",
                                         textAlign: TextAlign.right,
                                         style: TextStyle(
                                           color: Colors.grey[800],
@@ -293,7 +312,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           Padding(
                             padding: EdgeInsets.only(
@@ -313,11 +332,31 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Future<void> _displayTextInputDialog(BuildContext context) async {
+    _textFieldController.text = serverURL;
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              title: Text('Server URL'),
+              content: TextField(
+                onChanged: (value) {
+                  setState(() {
+                    serverURL = value;
+                  });
+                },
+                controller: _textFieldController,
+                decoration: InputDecoration(hintText: serverURL),
+              ));
+        });
+  }
+
   void fetchCpuData() async {
     try {
-      final response = await http
-          .get(Uri.parse('http://192.168.0.12:5000'))
-          .timeout(const Duration(seconds: 5));
+      final response = await http.get(Uri.parse(serverURL), headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE, HEAD"
+      }).timeout(const Duration(seconds: 5));
       if (response.statusCode != 200) throw new Exception(response.statusCode);
 
       Wakelock.enable();
@@ -339,6 +378,9 @@ class _MyHomePageState extends State<MyHomePage> {
             "% Memory": 100 *
                 data["default_cpu"]["memory"]["current"] /
                 data["default_cpu"]["memory"]["max"],
+            "% Swap": 100 *
+                data["default_cpu"]["swap"]["current"] /
+                data["default_cpu"]["swap"]["max"],
           }, {
             "name": data["default_cpu"]["name"],
             "temperature": data["default_cpu"]["temperature"],
@@ -375,6 +417,14 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           }
         }
+        chartsData["cpu"]["diskUsageWidgets"] = <Widget>[];
+        data["default_cpu"]["disks"].forEach((disk, usage) {
+          chartsData["cpu"]["diskUsageWidgets"].add(
+            DiskPieChart(
+              percentage: usage,
+            ),
+          );
+        });
 
         if (data.containsKey("default_nvidia_gpu"))
           setChartData("gpu", {
@@ -382,10 +432,12 @@ class _MyHomePageState extends State<MyHomePage> {
             "% Memory": 100 *
                 data["default_nvidia_gpu"]["0"]["memory"]["current"] /
                 data["default_nvidia_gpu"]["0"]["memory"]["max"],
+            "% Power": 100 *
+                data["default_nvidia_gpu"]["0"]["power"]["current"] /
+                data["default_nvidia_gpu"]["0"]["power"]["max"],
           }, {
             "name": data["default_nvidia_gpu"]["0"]["name"],
             "temperature": data["default_nvidia_gpu"]["0"]["temperature"],
-            "fps": data["default_nvidia_gpu"]["0"]["fps"],
             "frequency": data["default_nvidia_gpu"]["0"]["frequency"]
                 ["current"],
             "power": data["default_nvidia_gpu"]["0"]["power"]["current"],
@@ -403,6 +455,10 @@ class _MyHomePageState extends State<MyHomePage> {
         Wakelock.disable();
       }
     }
+    // call this function again after some time
+    Timer(Duration(seconds: 5), () {
+      fetchCpuData();
+    });
   }
 
   void setChartData(String key, Map<String, double> currentValues,

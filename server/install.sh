@@ -5,6 +5,7 @@ DIRNAME=$(dirname $(realpath "$0"))
 # create .desktop and .service files for current installation
 cp omnimeter.service.example omnimeter.service
 sed -i "s+<OMNIMETERFOLDER>+$DIRNAME+" omnimeter.service
+sed -i "s+<OMNIMETERUSER>+$(whoami)+" omnimeter.service
 cp omnimeter.desktop.example omnimeter.desktop
 sed -i "s+<OMNIMETERFOLDER>+$DIRNAME+" omnimeter.desktop
 cp run.sh.example run.sh

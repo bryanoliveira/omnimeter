@@ -2,33 +2,25 @@ import inspect
 import logging
 import os
 import pkgutil
-import threading
 
 from flask import Flask
-import PySimpleGUIQt as sg
+from flask_cors import CORS
 
 from plugin_interface import PluginInterface
 
-
 app = Flask(__name__)
+CORS(app)
+logger = logging.getLogger("werkzeug")
+logger.setLevel(logging.ERROR)
+
 plugins = []
-wake_count = -1
 
-
-def wake_device(device="0033676464"):
-    global wake_count
-    wake_count += 1
-    if wake_count % 10 == 0:
-        # print("Waking device: {}".format(device))
-        os.popen(f"adb -s {device} shell input keyevent KEYCODE_WAKEUP")
-        wake_count = 0
 
 @app.route("/")
 def get_stats():
     """
     Gets stats dicts from all modules in plugins folder
     """
-    wake_device()
     stats = {}
     for plugin in plugins:
         stats = {
@@ -52,45 +44,28 @@ def get_plugins():
     }
 
 
-def system_tray():
-    tray = sg.SystemTray(
-        menu=["BLANK", ["E&xit"]], filename="icon.svg", tooltip="OmniMeter"
-    )
-    while True:
-        menu_item = tray.Read()
-        if menu_item == "Exit":
-            os._exit(0)
-
-
 if __name__ == "__main__":
     try:
         for loader, modname, _ in pkgutil.walk_packages(path=["./plugins"]):
-            print("Found module", modname)
+            logger.info("Found module", modname)
             module = loader.find_module(modname).load_module(modname)
-            print("Imported module", modname)
+            logger.info("Imported module", modname)
             for class_name, class_type in inspect.getmembers(module, inspect.isclass):
-                print("Found class", class_name, class_type)
+                logger.info("Found class", class_name, class_type)
                 if class_name != "PluginInterface" and issubclass(
                     class_type, PluginInterface
                 ):
-                    print("Found plugin", class_type)
+                    logger.info("Found plugin", class_type)
                     plugins.append(class_type())
-                    print("Installed plugin", class_type)
+                    logger.info("Installed plugin", class_type)
     except ImportError as e:
-        print(e)
+        logger.error(e)
     except Exception as e:
-        print(e)
+        logger.error(e)
 
-    print("Plugins:", plugins)
+    logger.info("Plugins:", plugins)
 
-    print("Starting system tray...")
-    tray = threading.Thread(target=system_tray, args=())
-    tray.start()
-
-    print("Waking up device")
-    wake_device()
-
-    print("Starting server...")
+    logger.info("Starting server...")
     app.run(
         host="0.0.0.0",
         port="5000",
