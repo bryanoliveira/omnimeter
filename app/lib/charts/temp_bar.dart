@@ -40,7 +40,7 @@ class TemperatureBarChart extends StatelessWidget {
 
     return Container(
       width: 20,
-      height: 100,
+      height: 110,
       child: BarChart(
         BarChartData(
           barGroups: [
@@ -67,10 +67,12 @@ class TemperatureBarChart extends StatelessWidget {
             bottomTitles: SideTitles(
               showTitles: true,
               getTextStyles: (value) =>
-                  const TextStyle(color: Color(0xff939393), fontSize: 18),
-              margin: 0,
-              getTitles: (double value) =>
-                  temperature.toStringAsFixed(0) + " ºC",
+                  const TextStyle(color: Color(0xff939393), fontSize: 15),
+              margin: 5,
+              getTitles: (double value) => temperature.toStringAsFixed(0) + "º",
+            ),
+            leftTitles: SideTitles(
+              showTitles: false,
             ),
           ),
         ),
