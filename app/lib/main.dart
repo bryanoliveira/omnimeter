@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:wakelock/wakelock.dart';
 
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_sensors/flutter_sensors.dart';
 
 import 'charts/line.dart';
 import 'charts/temp_bar.dart';
@@ -75,6 +76,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Timer? timer;
   int errorCount = 0;
 
+  StreamSubscription? accelSubscription;
+  double accelX = 0.0;
+  double accelY = 0.0;
+  double accelZ = 0.0;
+
   @override
   void initState() {
     super.initState();
@@ -86,6 +92,8 @@ class _MyHomePageState extends State<MyHomePage> {
     SystemChrome.setEnabledSystemUIOverlays([]);
 
     fetchCpuData();
+
+    startAccelerometer();
   }
 
   @override
@@ -101,6 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     timer?.cancel();
     super.dispose();
+    stopAccelerometer();
   }
 
   @override
@@ -433,6 +442,35 @@ class _MyHomePageState extends State<MyHomePage> {
                                             fontSize: 16,
                                           ),
                                         ),
+                                        // Accel
+                                        Text(
+                                          // check if the abs value of accelX is > 0.1
+                                          ((accelX.abs() > 0.05)
+                                                  ? "X" +
+                                                      accelX
+                                                          .toStringAsFixed(2) +
+                                                      "\n"
+                                                  : "") +
+                                              ((accelY.abs() > 0.05)
+                                                  ? "Y" +
+                                                      accelY
+                                                          .toStringAsFixed(2) +
+                                                      "\n"
+                                                  : "") +
+                                              ((accelZ.abs() > 0.05)
+                                                  ? "Z" +
+                                                      accelZ
+                                                          .toStringAsFixed(2) +
+                                                      "\n"
+                                                  : ""),
+                                          // (accelY.abs() > 0.05)
+                                          //     ? (accelY > 0 ? "sub" : "des")
+                                          //     : "",
+                                          style: TextStyle(
+                                            color: Colors.grey[400],
+                                            fontSize: 16,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -480,6 +518,9 @@ class _MyHomePageState extends State<MyHomePage> {
       Wakelock.enable();
       offline = false;
       errorCount = 0;
+
+      stopAccelerometer();
+      startAccelerometer();
 
       Map<String, dynamic> data = jsonDecode(response.body);
 
@@ -627,5 +668,35 @@ class _MyHomePageState extends State<MyHomePage> {
 
       chartsData[key]["traces"][title].add(FlSpot(currentX, value));
     });
+  }
+
+  void startAccelerometer() {
+    if (accelSubscription != null) return;
+
+    SensorManager()
+        .isSensorAvailable(Sensors.ACCELEROMETER)
+        .then((result) async {
+      final stream = await SensorManager().sensorUpdates(
+        sensorId: Sensors.ACCELEROMETER,
+        interval: Sensors.SENSOR_DELAY_NORMAL,
+      );
+      accelSubscription = stream.listen((sensorEvent) {
+        if (sensorEvent.accuracy != Sensors.SENSOR_STATUS_ACCURACY_HIGH) return;
+
+        setState(() {
+          // average the current read and the last average
+          double alpha = 0.001;
+          accelX = sensorEvent.data[0];
+          accelY = sensorEvent.data[1];
+          accelZ = sensorEvent.data[2];
+        });
+      });
+    });
+  }
+
+  void stopAccelerometer() {
+    if (accelSubscription == null) return;
+    accelSubscription?.cancel();
+    accelSubscription = null;
   }
 }
