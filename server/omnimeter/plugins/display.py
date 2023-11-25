@@ -2,10 +2,15 @@
 from plugin_interface import PluginInterface
 
 # plugin imports
+import os
 import subprocess
 
 
 def is_display_on():
+    if 'DISPLAY' not in os.environ:
+        # No display available
+        return False
+
     try:
         output = subprocess.check_output("xset -q", shell=True).decode()
         # Look for lines that indicate the display power status
