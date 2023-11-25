@@ -385,53 +385,57 @@ class _MyHomePageState extends State<MyHomePage> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  // A text above a clock icon
-                                  chartsData.containsKey("display") &&
-                                          chartsData["display"]
-                                              .containsKey("total_time_ms")
-                                      ? Padding(
-                                          padding: EdgeInsets.only(top: 30),
-                                          child: Wrap(
-                                            direction: Axis.vertical,
-                                            alignment: WrapAlignment.center,
-                                            runAlignment:
-                                                WrapAlignment.spaceEvenly,
-                                            crossAxisAlignment:
-                                                WrapCrossAlignment.center,
-                                            children: [
-                                              Icon(
-                                                Icons.monitor,
-                                                color: Colors.grey[400],
-                                                size: 22,
-                                              ),
-                                              Text(
-                                                (chartsData["display"][
-                                                                "total_time_ms"] >
-                                                            3600000
-                                                        ? Duration(
-                                                                    milliseconds:
-                                                                        chartsData["display"][
-                                                                            "total_time_ms"])
-                                                                .inMinutes
-                                                                .toString() +
-                                                            "h"
-                                                        : "") +
-                                                    Duration(
-                                                            milliseconds: chartsData[
-                                                                    "display"][
-                                                                "total_time_ms"])
-                                                        .inMinutes
-                                                        .toString() +
-                                                    "m",
-                                                style: TextStyle(
-                                                  color: Colors.grey[400],
-                                                  fontSize: 16,
-                                                ),
-                                              ),
-                                            ],
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 30),
+                                    child: Wrap(
+                                      direction: Axis.vertical,
+                                      alignment: WrapAlignment.center,
+                                      runAlignment: WrapAlignment.spaceEvenly,
+                                      crossAxisAlignment:
+                                          WrapCrossAlignment.center,
+                                      children: [
+                                        // Total time
+                                        Icon(
+                                          Icons.monitor,
+                                          color: Colors.grey[400],
+                                          size: 22,
+                                        ),
+                                        Text(
+                                          chartsData.containsKey("display") &&
+                                                  chartsData["display"]
+                                                      .containsKey(
+                                                          "total_time_ms")
+                                              ? ((chartsData["display"][
+                                                              "total_time_ms"] >
+                                                          3600000
+                                                      ? Duration(
+                                                                  milliseconds:
+                                                                      chartsData[
+                                                                              "display"]
+                                                                          [
+                                                                          "total_time_ms"])
+                                                              .inHours
+                                                              .toString() +
+                                                          "h"
+                                                      : "") +
+                                                  (Duration(
+                                                                  milliseconds:
+                                                                      chartsData[
+                                                                              "display"]
+                                                                          ["total_time_ms"])
+                                                              .inMinutes %
+                                                          60)
+                                                      .toString() +
+                                                  "m")
+                                              : "--",
+                                          style: TextStyle(
+                                            color: Colors.grey[400],
+                                            fontSize: 16,
                                           ),
-                                        )
-                                      : Container()
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),
