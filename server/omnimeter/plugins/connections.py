@@ -14,14 +14,18 @@ def count_ssh_users():
         # Regular expression pattern to match IP addresses
         ip_pattern = re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b")
 
+        # Set to store unique user names
+        unique_users = set()
+
         # Count SSH connections by detecting IP addresses
         ssh_count = 0
         for line in output.splitlines()[2:]:  # Skip the header lines
             columns = line.split()
             if len(columns) > 2 and ip_pattern.search(columns[2]):
                 ssh_count += 1
+                unique_users.add(columns[0])
 
-        return ssh_count
+        return ssh_count, len(unique_users)
 
     except subprocess.CalledProcessError as e:
         print(f"Error executing 'w' command: {e}")
@@ -42,6 +46,5 @@ class ConnectionsPlugin(PluginInterface):
         return "A simple SSH connections monitor."
 
     def get_dict(self):
-        return {
-            "connections": count_ssh_users(),
-        }
+        ssh_count, unique_users = count_ssh_users()
+        return {"total": ssh_count, "users": unique_users}
