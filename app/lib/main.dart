@@ -385,38 +385,25 @@ class _MyHomePageState extends State<MyHomePage> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 30),
-                                    child: Wrap(
-                                      direction: Axis.vertical,
-                                      alignment: WrapAlignment.center,
-                                      runAlignment: WrapAlignment.spaceEvenly,
-                                      crossAxisAlignment:
-                                          WrapCrossAlignment.center,
-                                      children:
-                                          (chartsData.containsKey(
-                                                          "connections") &&
-                                                      chartsData["connections"]
-                                                              ["total"] >
-                                                          0
-                                                  ? <StatelessWidget>[
-                                                      chartsData["connections"]
-                                                                  ["users"] >
-                                                              1
-                                                          ? Icon(
-                                                              Icons
-                                                                  .supervisor_account,
-                                                              color: Colors
-                                                                  .grey[400],
-                                                              size: 22,
-                                                            )
-                                                          : Icon(
-                                                              Icons.link,
-                                                              color: Colors
-                                                                  .grey[400],
-                                                              size: 22,
-                                                            ),
-                                                      Container(
+                                  Wrap(
+                                    direction: Axis.vertical,
+                                    alignment: WrapAlignment.center,
+                                    runAlignment: WrapAlignment.spaceEvenly,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    children: (chartsData
+                                                .containsKey("connections")
+                                            ? (chartsData["connections"]
+                                                            ["total"] >
+                                                        0
+                                                    ? [
+                                                        Icon(
+                                                          Icons.link,
+                                                          color:
+                                                              Colors.grey[400],
+                                                          size: 22,
+                                                        ),
+                                                        Container(
                                                           margin:
                                                               const EdgeInsets
                                                                       .only(
@@ -430,47 +417,81 @@ class _MyHomePageState extends State<MyHomePage> {
                                                                   .grey[400],
                                                               fontSize: 16,
                                                             ),
-                                                          )),
-                                                    ]
-                                                  : <StatelessWidget>[]) +
-                                              [
-                                                // Total time
-                                                Icon(
-                                                  Icons.monitor,
-                                                  color: Colors.grey[400],
-                                                  size: 22,
-                                                ),
-                                                Text(
-                                                  chartsData.containsKey(
-                                                              "display") &&
-                                                          chartsData["display"]
-                                                              .containsKey(
-                                                                  "total_time_ms")
-                                                      ? ((chartsData["display"][
-                                                                      "total_time_ms"] >
-                                                                  3600000
-                                                              ? Duration(
-                                                                          milliseconds: chartsData["display"]
-                                                                              [
-                                                                              "total_time_ms"])
-                                                                      .inHours
-                                                                      .toString() +
-                                                                  "h"
-                                                              : "") +
-                                                          (Duration(milliseconds: chartsData["display"]["total_time_ms"])
-                                                                      .inMinutes %
-                                                                  60)
-                                                              .toString() +
-                                                          "m")
-                                                      : "--",
-                                                  style: TextStyle(
-                                                    color: Colors.grey[400],
-                                                    fontSize: 16,
-                                                  ),
-                                                ),
-                                                // Connections
-                                              ],
-                                    ),
+                                                          ),
+                                                        )
+                                                      ]
+                                                    : <StatelessWidget>[]) +
+                                                (chartsData["connections"]
+                                                            ["users"] >
+                                                        1
+                                                    ? [
+                                                        Icon(
+                                                          Icons
+                                                              .supervisor_account,
+                                                          color:
+                                                              Colors.grey[400],
+                                                          size: 22,
+                                                        ),
+                                                        Container(
+                                                          margin:
+                                                              const EdgeInsets
+                                                                      .only(
+                                                                  bottom: 10.0),
+                                                          child: Text(
+                                                            chartsData["connections"]
+                                                                    ["users"]
+                                                                .toString(),
+                                                            style: TextStyle(
+                                                              color: Colors
+                                                                  .grey[400],
+                                                              fontSize: 16,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ]
+                                                    : [])
+                                            : <StatelessWidget>[]) +
+                                        [
+                                          // Total time
+                                          Icon(
+                                            Icons.monitor,
+                                            color: Colors.grey[400],
+                                            size: 22,
+                                          ),
+                                          Text(
+                                            chartsData.containsKey("display") &&
+                                                    chartsData["display"]
+                                                        .containsKey(
+                                                            "total_time_ms")
+                                                ? ((chartsData["display"][
+                                                                "total_time_ms"] >
+                                                            3600000
+                                                        ? Duration(
+                                                                    milliseconds:
+                                                                        chartsData["display"]
+                                                                            [
+                                                                            "total_time_ms"])
+                                                                .inHours
+                                                                .toString() +
+                                                            "h"
+                                                        : "") +
+                                                    (Duration(
+                                                                    milliseconds:
+                                                                        chartsData["display"]
+                                                                            [
+                                                                            "total_time_ms"])
+                                                                .inMinutes %
+                                                            60)
+                                                        .toString() +
+                                                    "m")
+                                                : "--",
+                                            style: TextStyle(
+                                              color: Colors.grey[400],
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          // Connections
+                                        ],
                                   ),
                                 ],
                               ),

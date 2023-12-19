@@ -21,9 +21,9 @@ def count_ssh_users():
         ssh_count = 0
         for line in output.splitlines()[2:]:  # Skip the header lines
             columns = line.split()
+            unique_users.add(columns[0])
             if len(columns) > 2 and ip_pattern.search(columns[2]):
                 ssh_count += 1
-                unique_users.add(columns[0])
 
         return ssh_count, len(unique_users)
 
