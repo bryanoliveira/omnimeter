@@ -579,22 +579,22 @@ class _MyHomePageState extends State<MyHomePage> {
           chartsData["display"]["last_on"] =
               data["default_display"]["status"] == "on";
 
-          // if (chartsData["display"].containsKey("total_time_ms"))
-          //   chartsData["display"]["total_string"] = ((chartsData["display"]
-          //                   ["total_time_ms"] >
-          //               3600000
-          //           ? Duration(
-          //                       milliseconds: chartsData["display"]
-          //                           ["total_time_ms"])
-          //                   .inHours
-          //                   .toString() +
-          //               "h"
-          //           : "") +
-          //       (Duration(milliseconds: chartsData["display"]["total_time_ms"])
-          //                   .inMinutes %
-          //               60)
-          //           .toString() +
-          //       "m");
+          if (chartsData["display"].containsKey("total_time_ms"))
+            chartsData["display"]["total_string"] = ((chartsData["display"]
+                            ["total_time_ms"] >
+                        3600000
+                    ? Duration(
+                                milliseconds: chartsData["display"]
+                                    ["total_time_ms"])
+                            .inHours
+                            .toString() +
+                        "h"
+                    : "") +
+                (Duration(milliseconds: chartsData["display"]["total_time_ms"])
+                            .inMinutes %
+                        60)
+                    .toString() +
+                "m");
         }
 
         if (data.containsKey("default_connections")) {
