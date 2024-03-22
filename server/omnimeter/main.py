@@ -48,25 +48,25 @@ def get_plugins():
 if __name__ == "__main__":
     try:
         for loader, modname, _ in pkgutil.walk_packages(path=["./plugins"]):
-            logger.info("Found module", modname)
+            print("Found module", modname)
             module = loader.find_module(modname).load_module(modname)
-            logger.info("Imported module", modname)
+            print("Imported module", modname)
             for class_name, class_type in inspect.getmembers(module, inspect.isclass):
-                logger.info("Found class", class_name, class_type)
+                print("Found class", class_name, class_type)
                 if class_name != "PluginInterface" and issubclass(
                     class_type, PluginInterface
                 ):
-                    logger.info("Found plugin", class_type)
+                    print("Found plugin", class_type)
                     plugins.append(class_type())
-                    logger.info("Installed plugin", class_type)
+                    print("Installed plugin", class_type)
     except ImportError as e:
         logger.error(e)
     except Exception as e:
         logger.error(e)
 
-    logger.info("Plugins:", plugins)
+    print("Plugins:", plugins)
 
-    logger.info("Starting server...")
+    print("Starting server...")
     app.run(
         host="0.0.0.0",
         port="5000",
