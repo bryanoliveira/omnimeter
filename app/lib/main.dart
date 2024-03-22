@@ -83,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
-    SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
 
     fetchCpuData();
   }
@@ -97,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
       DeviceOrientation.portraitDown,
     ]);
 
-    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
 
     timer?.cancel();
     super.dispose();
@@ -112,7 +112,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
-    SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
     return Scaffold(
       body: GestureDetector(
         onTap: () {
@@ -379,7 +379,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           Expanded(
                             child: Padding(
                               padding: EdgeInsets.only(
-                                bottom: 10,
+                                bottom: 5,
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
