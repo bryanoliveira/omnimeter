@@ -12,6 +12,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'charts/line.dart';
 import 'charts/temp_bar.dart';
 import 'charts/pie.dart';
+import 'charts/icon_legend_vertical.dart';
 
 void main() {
   runApp(MyApp());
@@ -97,7 +98,8 @@ class _MyHomePageState extends State<MyHomePage> {
       DeviceOrientation.portraitDown,
     ]);
 
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: SystemUiOverlay.values);
 
     timer?.cancel();
     super.dispose();
@@ -171,7 +173,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 // Title
                                 Padding(
                                   padding: EdgeInsets.only(
-                                    bottom: 10,
+                                    bottom: 5,
                                   ),
                                   child: Row(
                                     children: [
@@ -277,7 +279,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 Padding(
                                   padding: EdgeInsets.only(
                                     top: 20,
-                                    bottom: 10,
+                                    bottom: 5,
                                   ),
                                   child: Row(
                                     children: [
@@ -356,7 +358,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     Expanded(
                       child: Column(
-                        // Icons
+                        // Top Icons
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
@@ -371,130 +373,67 @@ class _MyHomePageState extends State<MyHomePage> {
                                   runAlignment: WrapAlignment.spaceEvenly,
                                   crossAxisAlignment: WrapCrossAlignment.center,
                                   children: chartsData["cpu"]
-                                      ["diskUsageWidgets"],
+                                          ["diskUsageWidgets"] +
+                                      chartsData["bluetoothWidgets"],
                                 )
                               ],
                             ),
                           ),
+                          // Bottom Icons
                           Expanded(
-                            child: Padding(
-                              padding: EdgeInsets.only(
-                                bottom: 5,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Wrap(
-                                    direction: Axis.vertical,
-                                    alignment: WrapAlignment.center,
-                                    runAlignment: WrapAlignment.spaceEvenly,
-                                    crossAxisAlignment:
-                                        WrapCrossAlignment.center,
-                                    children: (chartsData
-                                                .containsKey("connections")
-                                            ? (chartsData["connections"]
-                                                            ["total"] >
-                                                        0
-                                                    ? [
-                                                        Icon(
-                                                          Icons.link,
-                                                          color:
-                                                              Colors.grey[400],
-                                                          size: 22,
-                                                        ),
-                                                        Container(
-                                                          margin:
-                                                              const EdgeInsets
-                                                                      .only(
-                                                                  bottom: 10.0),
-                                                          child: Text(
-                                                            chartsData["connections"]
-                                                                    ["total"]
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                              color: Colors
-                                                                  .grey[400],
-                                                              fontSize: 16,
-                                                            ),
-                                                          ),
-                                                        )
-                                                      ]
-                                                    : <StatelessWidget>[]) +
-                                                (chartsData["connections"]
-                                                            ["users"] >
-                                                        1
-                                                    ? [
-                                                        Icon(
-                                                          Icons
-                                                              .supervisor_account,
-                                                          color:
-                                                              Colors.grey[400],
-                                                          size: 22,
-                                                        ),
-                                                        Container(
-                                                          margin:
-                                                              const EdgeInsets
-                                                                      .only(
-                                                                  bottom: 10.0),
-                                                          child: Text(
-                                                            chartsData["connections"]
-                                                                    ["users"]
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                              color: Colors
-                                                                  .grey[400],
-                                                              fontSize: 16,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ]
-                                                    : [])
-                                            : <StatelessWidget>[]) +
-                                        [
-                                          // Total time
-                                          Icon(
-                                            Icons.monitor,
-                                            color: Colors.grey[400],
-                                            size: 22,
-                                          ),
-                                          Text(
-                                            chartsData.containsKey("display") &&
-                                                    chartsData["display"]
-                                                        .containsKey(
-                                                            "total_time_ms")
-                                                ? ((chartsData["display"][
-                                                                "total_time_ms"] >
-                                                            3600000
-                                                        ? Duration(
-                                                                    milliseconds:
-                                                                        chartsData["display"]
-                                                                            [
-                                                                            "total_time_ms"])
-                                                                .inHours
-                                                                .toString() +
-                                                            "h"
-                                                        : "") +
-                                                    (Duration(
-                                                                    milliseconds:
-                                                                        chartsData["display"]
-                                                                            [
-                                                                            "total_time_ms"])
-                                                                .inMinutes %
-                                                            60)
-                                                        .toString() +
-                                                    "m")
-                                                : "--",
-                                            style: TextStyle(
-                                              color: Colors.grey[400],
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          // Connections
-                                        ],
-                                  ),
-                                ],
-                              ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Wrap(
+                                  direction: Axis.vertical,
+                                  alignment: WrapAlignment.center,
+                                  runAlignment: WrapAlignment.spaceEvenly,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: (chartsData
+                                              .containsKey("connections")
+                                          ? (chartsData["connections"]
+                                                          ["total"] >
+                                                      0
+                                                  ? <StatelessWidget>[
+                                                      IconLegendVertical(
+                                                        icon: Icons.link,
+                                                        text: chartsData[
+                                                                    "connections"]
+                                                                ["total"]
+                                                            .toString(),
+                                                      )
+                                                    ]
+                                                  : <StatelessWidget>[]) +
+                                              (chartsData["connections"]
+                                                          ["users"] >
+                                                      1
+                                                  ? <StatelessWidget>[
+                                                      IconLegendVertical(
+                                                        icon: Icons
+                                                            .supervisor_account,
+                                                        text: chartsData[
+                                                                    "connections"]
+                                                                ["users"]
+                                                            .toString(),
+                                                      ),
+                                                    ]
+                                                  : [])
+                                          : <StatelessWidget>[]) +
+                                      [
+                                        // Total time
+                                        chartsData["display"]["total_string"] !=
+                                                null
+                                            ? IconLegendVertical(
+                                                icon: Icons.monitor,
+                                                text: chartsData["display"]
+                                                    ["total_string"])
+                                            : Container(),
+
+                                        // Connections
+                                      ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -639,6 +578,23 @@ class _MyHomePageState extends State<MyHomePage> {
           chartsData["display"]["last_updated"] = DateTime.now();
           chartsData["display"]["last_on"] =
               data["default_display"]["status"] == "on";
+
+          // if (chartsData["display"].containsKey("total_time_ms"))
+          //   chartsData["display"]["total_string"] = ((chartsData["display"]
+          //                   ["total_time_ms"] >
+          //               3600000
+          //           ? Duration(
+          //                       milliseconds: chartsData["display"]
+          //                           ["total_time_ms"])
+          //                   .inHours
+          //                   .toString() +
+          //               "h"
+          //           : "") +
+          //       (Duration(milliseconds: chartsData["display"]["total_time_ms"])
+          //                   .inMinutes %
+          //               60)
+          //           .toString() +
+          //       "m");
         }
 
         if (data.containsKey("default_connections")) {
@@ -648,6 +604,23 @@ class _MyHomePageState extends State<MyHomePage> {
           chartsData["connections"]["users"] =
               data["default_connections"]["users"];
         }
+
+        chartsData["bluetoothWidgets"] = <Widget>[
+          SizedBox(height: 5),
+        ];
+        const icon_map = {
+          "input-keyboard": Icons.keyboard,
+          "audio-headset": Icons.headset_mic,
+          "input-gaming": Icons.gamepad,
+        };
+        data["bluetooth"]["devices"].forEach((device) {
+          var icon = icon_map[device["icon"]];
+          if (icon == null) icon = Icons.bluetooth;
+          if (device.containsKey("battery")) {
+            chartsData["bluetoothWidgets"]
+                .add(IconLegendVertical(text: device["battery"], icon: icon));
+          }
+        });
 
         currentX++;
       });

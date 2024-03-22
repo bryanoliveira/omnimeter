@@ -17,8 +17,8 @@ class DiskPieChart extends StatelessWidget {
       color = Colors.white;
 
     return Container(
-      width: 28,
-      height: 28,
+      width: 25,
+      height: 25,
       child: PieChart(
         PieChartData(
           borderData: FlBorderData(
