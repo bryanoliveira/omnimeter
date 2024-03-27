@@ -1,8 +1,10 @@
 log.txt
+logs.txt
 sysenv
 omnimeter.service
 omnimeter.desktop
 run.sh
+Python37/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
