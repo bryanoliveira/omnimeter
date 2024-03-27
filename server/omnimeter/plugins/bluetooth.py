@@ -9,8 +9,8 @@ import psutil
 
 ### WINDOWS
 if os.name == "nt":
-    def get_bluetooth_devices_info():
-        pass
+    def get_connected_bluetooth_devices_info():
+        return []
 
 ### POSIX
 else:

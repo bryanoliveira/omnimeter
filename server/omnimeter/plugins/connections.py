@@ -2,37 +2,45 @@
 from plugin_interface import PluginInterface
 
 # plugin imports
+import os
 import re
 import subprocess
 
+### WINDOWS
+if os.name == "nt":
+    def count_ssh_users():
+        return 0, 0
 
-def count_ssh_users():
-    try:
-        # Execute the 'w' command
-        output = subprocess.check_output("w", shell=True).decode()
+### POSIX
+else:
 
-        # Regular expression pattern to match IP addresses
-        ip_pattern = re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b")
+    def count_ssh_users():
+        try:
+            # Execute the 'w' command
+            output = subprocess.check_output("w", shell=True).decode()
 
-        # Set to store unique user names
-        unique_users = set()
+            # Regular expression pattern to match IP addresses
+            ip_pattern = re.compile(r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b")
 
-        # Count SSH connections by detecting IP addresses
-        ssh_count = 0
-        for line in output.splitlines()[2:]:  # Skip the header lines
-            columns = line.split()
-            unique_users.add(columns[0])
-            if len(columns) > 2 and ip_pattern.search(columns[2]):
-                ssh_count += 1
+            # Set to store unique user names
+            unique_users = set()
 
-        return ssh_count, len(unique_users)
+            # Count SSH connections by detecting IP addresses
+            ssh_count = 0
+            for line in output.splitlines()[2:]:  # Skip the header lines
+                columns = line.split()
+                unique_users.add(columns[0])
+                if len(columns) > 2 and ip_pattern.search(columns[2]):
+                    ssh_count += 1
 
-    except subprocess.CalledProcessError as e:
-        print(f"Error executing 'w' command: {e}")
-        return 0
-    except Exception as e:
-        print(f"General error: {e}")
-        return 0
+            return ssh_count, len(unique_users)
+
+        except subprocess.CalledProcessError as e:
+            print(f"Error executing 'w' command: {e}")
+            return 0
+        except Exception as e:
+            print(f"General error: {e}")
+            return 0
 
 
 class ConnectionsPlugin(PluginInterface):
