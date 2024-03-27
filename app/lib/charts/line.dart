@@ -60,8 +60,8 @@ class CommonLineChart extends StatelessWidget {
         : Stack(
             children: <Widget>[
               Container(
-                width: 540,
-                height: 105,
+                width: 520,
+                height: 100,
                 child: LineChart(
                   LineChartData(
                     minY: minY,
@@ -102,7 +102,7 @@ class CommonLineChart extends StatelessWidget {
                         showTitles: false,
                       ),
                       leftTitles: SideTitles(
-                        showTitles: true,
+                        showTitles: false,
                         interval: rangeY / 5,
                         getTextStyles: (value) => const TextStyle(
                           color: Color(0xff67727d),

@@ -12,6 +12,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'charts/line.dart';
 import 'charts/temp_bar.dart';
 import 'charts/pie.dart';
+import 'charts/icon_legend_vertical.dart';
 
 void main() {
   runApp(MyApp());
@@ -83,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
-    SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
 
     fetchCpuData();
   }
@@ -97,7 +98,8 @@ class _MyHomePageState extends State<MyHomePage> {
       DeviceOrientation.portraitDown,
     ]);
 
-    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+        overlays: SystemUiOverlay.values);
 
     timer?.cancel();
     super.dispose();
@@ -112,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
-    SystemChrome.setEnabledSystemUIOverlays([]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
     return Scaffold(
       body: GestureDetector(
         onTap: () {
@@ -144,27 +146,38 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
               )
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: <Widget>[
-                  Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: chartsData.containsKey("cpu")
-                            ? <Widget>[
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 25.0,
-                                        bottom: 18,
-                                      ),
-                                      child: Text(
+            : Padding(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  top: 20,
+                  bottom: 15,
+                ),
+                child: Row(
+                  // Charts / Icons
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Charts
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        // CPU
+                        Row(
+                          children: [
+                            // Single Column
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Title
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    bottom: 5,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Text(
                                         "CPU " + chartsData["cpu"]["name"],
                                         style: TextStyle(
                                           color: Colors.grey[400],
@@ -172,161 +185,262 @@ class _MyHomePageState extends State<MyHomePage> {
                                           fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 25.0,
-                                        bottom: 18,
-                                      ),
-                                      child: Text(
-                                        chartsData["cpu"]["frequency"]
-                                                .toStringAsFixed(0) +
-                                            " MHz",
-                                        textAlign: TextAlign.right,
-                                        style: TextStyle(
-                                          color: Colors.grey[800],
-                                          fontSize: 22,
+                                      Padding(
+                                        padding: EdgeInsets.only(
+                                          left: 25.0,
+                                        ),
+                                        child: Text(
+                                          chartsData["cpu"]["frequency"]
+                                                  .toStringAsFixed(0) +
+                                              " MHz",
+                                          textAlign: TextAlign.right,
+                                          style: TextStyle(
+                                            color: Colors.grey[800],
+                                            fontSize: 22,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 25.0,
-                                        bottom: 18,
+                                      Padding(
+                                        padding: EdgeInsets.only(
+                                          left: 75.0,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: <Widget>[
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: chartsData["cpu"]
+                                                  ["coreUsageWidgets0"],
+                                            ),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: chartsData["cpu"]
+                                                  ["coreUsageWidgets1"],
+                                            ),
+                                          ],
+                                        ),
                                       ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: <Widget>[
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: chartsData["cpu"]
-                                                ["coreUsageWidgets0"],
-                                          ),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: chartsData["cpu"]
-                                                ["coreUsageWidgets1"],
-                                          ),
-                                        ],
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  // Charts
+                                  children: [
+                                    Column(children: [
+                                      Padding(
+                                        padding: EdgeInsets.only(
+                                          top: 5,
+                                          right: 18,
+                                        ),
+                                        child: TemperatureBarChart(
+                                          temperature: chartsData["cpu"]
+                                              ["temperature"],
+                                        ),
                                       ),
+                                    ]),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: chartsData.containsKey("cpu")
+                                          ? <Widget>[
+                                              CommonLineChart(
+                                                data: chartsData["cpu"]
+                                                    ["traces"],
+                                                minY: chartsData["cpu"]["minY"],
+                                                maxY: chartsData["cpu"]["maxY"],
+                                              )
+                                            ]
+                                          : <Widget>[],
                                     ),
                                   ],
                                 ),
-                                CommonLineChart(
-                                    data: chartsData["cpu"]["traces"],
-                                    minY: chartsData["cpu"]["minY"],
-                                    maxY: chartsData["cpu"]["maxY"]),
-                              ]
-                            : <Widget>[],
-                      ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 100,
-                            height: 35,
-                            transform: Matrix4.translationValues(0, -7, 0),
-                            child: Wrap(
-                              direction: Axis.horizontal,
-                              alignment: WrapAlignment.center,
-                              runAlignment: WrapAlignment.spaceEvenly,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: chartsData["cpu"]["diskUsageWidgets"],
+                              ],
                             ),
-                          ),
-                          Row(
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  top: 15,
-                                ),
-                                child: TemperatureBarChart(
-                                  temperature: chartsData["cpu"]["temperature"],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: chartsData.containsKey("gpu")
-                            ? <Widget>[
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: <Widget>[
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 25.0,
-                                        top: 24,
-                                        bottom: 18,
-                                      ),
-                                      child: Text(
+                          ],
+                        ),
+                        Row(
+                          // GPU
+                          children: [
+                            // single column
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Title
+                                Padding(
+                                  padding: EdgeInsets.only(
+                                    top: 20,
+                                    bottom: 5,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Text(
                                         "GPU " + chartsData["gpu"]["name"],
                                         style: TextStyle(
                                             color: Colors.grey[400],
                                             fontSize: 22,
                                             fontWeight: FontWeight.bold),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: EdgeInsets.only(
-                                        left: 25.0,
-                                        top: 24,
-                                        bottom: 18,
-                                      ),
-                                      child: Text(
-                                        chartsData["gpu"]["frequency"]
-                                                .toStringAsFixed(0) +
-                                            " MHz  |  " +
-                                            chartsData["gpu"]["power"]
-                                                .toStringAsFixed(0) +
-                                            " W",
-                                        textAlign: TextAlign.right,
-                                        style: TextStyle(
-                                          color: Colors.grey[800],
-                                          fontSize: 22,
+                                      Padding(
+                                        padding: EdgeInsets.only(
+                                          left: 25.0,
+                                        ),
+                                        child: Text(
+                                          chartsData["gpu"]["frequency"]
+                                                  .toStringAsFixed(0) +
+                                              " MHz  |  " +
+                                              chartsData["gpu"]["power"]
+                                                  .toStringAsFixed(0) +
+                                              " W",
+                                          textAlign: TextAlign.right,
+                                          style: TextStyle(
+                                            color: Colors.grey[800],
+                                            fontSize: 22,
+                                          ),
                                         ),
                                       ),
+                                    ],
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Padding(
+                                          padding: EdgeInsets.only(
+                                            top: 5,
+                                            right: 18,
+                                          ),
+                                          child: TemperatureBarChart(
+                                            temperature: chartsData["gpu"]
+                                                ["temperature"],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: chartsData.containsKey("gpu")
+                                          ? <Widget>[
+                                              CommonLineChart(
+                                                  data: chartsData["gpu"]
+                                                      ["traces"],
+                                                  minY: chartsData["gpu"]
+                                                      ["minY"],
+                                                  maxY: chartsData["gpu"]
+                                                      ["maxY"]),
+                                            ]
+                                          : <Widget>[],
                                     ),
                                   ],
                                 ),
-                                CommonLineChart(
-                                    data: chartsData["gpu"]["traces"],
-                                    minY: chartsData["gpu"]["minY"],
-                                    maxY: chartsData["gpu"]["maxY"]),
-                              ]
-                            : <Widget>[],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(
-                              top: 70,
+                              ],
                             ),
-                            child: TemperatureBarChart(
-                              temperature: chartsData["gpu"]["temperature"],
+                          ],
+                        ),
+                      ],
+                    ),
+                    Expanded(
+                      child: Column(
+                        // Top Icons
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Wrap(
+                                  direction: Axis.vertical,
+                                  alignment: WrapAlignment.center,
+                                  runAlignment: WrapAlignment.spaceEvenly,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: chartsData["cpu"]
+                                          ["diskUsageWidgets"] +
+                                      chartsData["bluetoothWidgets"],
+                                )
+                              ],
+                            ),
+                          ),
+                          // Bottom Icons
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Wrap(
+                                  direction: Axis.vertical,
+                                  alignment: WrapAlignment.center,
+                                  runAlignment: WrapAlignment.spaceEvenly,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: (chartsData
+                                              .containsKey("connections")
+                                          ? (chartsData["connections"]
+                                                          ["total"] >
+                                                      0
+                                                  ? <StatelessWidget>[
+                                                      IconLegendVertical(
+                                                        icon: Icons.link,
+                                                        text: chartsData[
+                                                                    "connections"]
+                                                                ["total"]
+                                                            .toString(),
+                                                      )
+                                                    ]
+                                                  : <StatelessWidget>[]) +
+                                              (chartsData["connections"]
+                                                          ["users"] >
+                                                      1
+                                                  ? <StatelessWidget>[
+                                                      IconLegendVertical(
+                                                        icon: Icons
+                                                            .supervisor_account,
+                                                        text: chartsData[
+                                                                    "connections"]
+                                                                ["users"]
+                                                            .toString(),
+                                                      ),
+                                                    ]
+                                                  : [])
+                                          : <StatelessWidget>[]) +
+                                      [
+                                        // Total time
+                                        chartsData["display"]["total_string"] !=
+                                                null
+                                            ? IconLegendVertical(
+                                                icon: Icons.monitor,
+                                                text: chartsData["display"]
+                                                    ["total_string"])
+                                            : Container(),
+
+                                        // Connections
+                                      ],
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
       ),
     );
@@ -442,6 +556,71 @@ class _MyHomePageState extends State<MyHomePage> {
                 ["current"],
             "power": data["default_nvidia_gpu"]["0"]["power"]["current"],
           });
+
+        if (data.containsKey("default_display")) {
+          // check if data wasn't initialized or it was last updated yesterday
+          if (!chartsData.containsKey("display") ||
+              chartsData["display"]["last_updated"].day != DateTime.now().day) {
+            chartsData["display"] = Map<String, dynamic>();
+            chartsData["display"]["total_time_ms"] = 0;
+            chartsData["display"]["last_updated"] = DateTime.now();
+            chartsData["display"]["last_on"] =
+                data["default_display"]["status"] == "on";
+          }
+
+          // sum the difference between now and the last updated time
+          if (chartsData["display"]["last_on"] &&
+              data["default_display"]["status"] == "on")
+            chartsData["display"]["total_time_ms"] += DateTime.now()
+                .difference(chartsData["display"]["last_updated"])
+                .inMilliseconds;
+
+          chartsData["display"]["last_updated"] = DateTime.now();
+          chartsData["display"]["last_on"] =
+              data["default_display"]["status"] == "on";
+
+          if (chartsData["display"].containsKey("total_time_ms"))
+            chartsData["display"]["total_string"] = ((chartsData["display"]
+                            ["total_time_ms"] >
+                        3600000
+                    ? Duration(
+                                milliseconds: chartsData["display"]
+                                    ["total_time_ms"])
+                            .inHours
+                            .toString() +
+                        "h"
+                    : "") +
+                (Duration(milliseconds: chartsData["display"]["total_time_ms"])
+                            .inMinutes %
+                        60)
+                    .toString() +
+                "m");
+        }
+
+        if (data.containsKey("default_connections")) {
+          chartsData["connections"] = Map<String, dynamic>();
+          chartsData["connections"]["total"] =
+              data["default_connections"]["total"];
+          chartsData["connections"]["users"] =
+              data["default_connections"]["users"];
+        }
+
+        chartsData["bluetoothWidgets"] = <Widget>[
+          SizedBox(height: 5),
+        ];
+        const icon_map = {
+          "input-keyboard": Icons.keyboard,
+          "audio-headset": Icons.headset_mic,
+          "input-gaming": Icons.gamepad,
+        };
+        data["bluetooth"]["devices"].forEach((device) {
+          var icon = icon_map[device["icon"]];
+          if (icon == null) icon = Icons.bluetooth;
+          if (device.containsKey("battery")) {
+            chartsData["bluetoothWidgets"]
+                .add(IconLegendVertical(text: device["battery"], icon: icon));
+          }
+        });
 
         currentX++;
       });
