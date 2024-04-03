@@ -35,7 +35,7 @@ else:
                 key, value = line.split(": ", 1)
                 info[key] = value
 
-            if info["Connected"] == "yes":
+            if "Connected" in info and info["Connected"] == "yes":
                 filtered_info = {}
                 for key, value in info.items():
                     if key in info_key_map:
