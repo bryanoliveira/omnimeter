@@ -126,5 +126,5 @@ class CPUPlugin(PluginInterface):
             "disks": disks,
             "frequency": {"current": clock, "max": clock_max, "min": clock_min,},
             "temperature": get_cpu_temperature(),
-            "core_usage": psutil.cpu_percent(interval=None, percpu=True),
+            "core_usage": sorted(psutil.cpu_percent(interval=None, percpu=True), reverse=True),
         }
