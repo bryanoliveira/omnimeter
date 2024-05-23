@@ -8,6 +8,8 @@ import 'package:http/http.dart' as http;
 import 'package:wakelock/wakelock.dart';
 
 import 'package:fl_chart/fl_chart.dart';
+import 'package:lan_scanner/lan_scanner.dart';
+import 'package:network_info_plus/network_info_plus.dart';
 
 import 'charts/line.dart';
 import 'charts/temp_bar.dart';
@@ -65,8 +67,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String serverURL = 'http://192.168.0.12:5000';
-  TextEditingController _textFieldController = TextEditingController();
+  String serverIp = '10.0.0.2';
+  String serverPort = '5000';
+  TextEditingController _ipTextFieldController = TextEditingController();
+  TextEditingController _portTextFieldController = TextEditingController();
 
   final limitCount = 100;
   bool offline = true;
@@ -447,27 +451,115 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _displayTextInputDialog(BuildContext context) async {
-    _textFieldController.text = serverURL;
-    return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-              title: Text('Server URL'),
-              content: TextField(
-                onChanged: (value) {
-                  setState(() {
-                    serverURL = value;
+    _ipTextFieldController.text = serverIp;
+    _portTextFieldController.text = serverPort;
+
+    var wifiIP = await NetworkInfo().getWifiIP();
+    if (wifiIP == null) return;
+    var subnet = ipToCSubnet(wifiIP);
+
+    final scanner = LanScanner();
+    final List<Host> hosts = [];
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            // Start scanning asynchronously
+            Future<void> scanNetwork() async {
+              for (int i = 2; i <= 255; i += 5) {
+                final int endIP = (i + 4 <= 255) ? i + 4 : 255;
+                final List<Host> partialHosts = await scanner.quickIcmpScanSync(
+                  subnet,
+                  firstIP: i,
+                  lastIP: endIP,
+                );
+
+                if (partialHosts.isEmpty) return;
+
+                try {
+                  setModalState(() {
+                    hosts.addAll(partialHosts);
                   });
-                },
-                controller: _textFieldController,
-                decoration: InputDecoration(hintText: serverURL),
-              ));
-        });
+                } catch (e) {
+                  return;
+                }
+              }
+            }
+
+            // Start the scan
+            scanNetwork();
+
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          onChanged: (value) {
+                            setModalState(() {
+                              serverIp = value;
+                            });
+                          },
+                          controller: _ipTextFieldController,
+                          decoration:
+                              InputDecoration(hintText: 'Enter Server IP'),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          onChanged: (value) {
+                            setModalState(() {
+                              serverPort = value;
+                            });
+                          },
+                          controller: _portTextFieldController,
+                          decoration:
+                              InputDecoration(hintText: 'Port (e.g. 5000)'),
+                          keyboardType: TextInputType.number,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Expanded(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: hosts.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title:
+                              Text('${hosts[index].internetAddress.address}'),
+                          onTap: () {
+                            setState(() {
+                              serverIp =
+                                  '${hosts[index].internetAddress.address}';
+                              _ipTextFieldController.text = serverIp;
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void fetchCpuData() async {
     try {
-      final response = await http.get(Uri.parse(serverURL), headers: {
+      final response = await http
+          .get(Uri.parse("http://" + serverIp + ":" + serverPort), headers: {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE, HEAD"
       }).timeout(const Duration(seconds: 5));
