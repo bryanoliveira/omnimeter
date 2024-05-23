@@ -10,11 +10,11 @@ from plugin_interface import PluginInterface
 
 app = Flask(__name__)
 CORS(app)
+logging.basicConfig()
 logger = logging.getLogger("werkzeug")
 logger.setLevel(logging.ERROR)
 
 plugins = []
-wake_count = -1
 
 
 @app.route("/")

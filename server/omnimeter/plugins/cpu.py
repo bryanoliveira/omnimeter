@@ -107,7 +107,7 @@ class CPUPlugin(PluginInterface):
         disks = {
             p.mountpoint: psutil.disk_usage(p.mountpoint).percent
             for p in psutil.disk_partitions()
-            if p.fstype not in ("squashfs", "vfat")
+            if p.fstype not in ("squashfs", "vfat") and "rw" in p.opts 
         }
 
         return {

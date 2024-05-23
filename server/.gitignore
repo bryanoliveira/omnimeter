@@ -1,8 +1,16 @@
 log.txt
+logs.txt
+
+# Linux
 sysenv
 omnimeter.service
 omnimeter.desktop
 run.sh
+
+# Windows
+omnimeter/Omnimeter.bat
+omnimeter/Omnimeter.lnk
+omnimeter/lib/windows/Python37
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
