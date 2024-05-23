@@ -10,6 +10,7 @@ import 'package:wakelock/wakelock.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:lan_scanner/lan_scanner.dart';
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'charts/line.dart';
 import 'charts/temp_bar.dart';
@@ -90,6 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
     ]);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
 
+    loadServerConfig();
     fetchCpuData();
   }
 
@@ -450,6 +452,20 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Future<void> saveServerConfig() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('serverIp', serverIp);
+    await prefs.setString('serverPort', serverPort);
+  }
+
+  Future<void> loadServerConfig() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      serverIp = prefs.getString('serverIp') ?? '10.0.0.2';
+      serverPort = prefs.getString('serverPort') ?? '5000';
+    });
+  }
+
   Future<void> _displayTextInputDialog(BuildContext context) async {
     _ipTextFieldController.text = serverIp;
     _portTextFieldController.text = serverPort;
@@ -503,6 +519,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           onChanged: (value) {
                             setModalState(() {
                               serverIp = value;
+                              saveServerConfig();
                             });
                           },
                           controller: _ipTextFieldController,
@@ -516,6 +533,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           onChanged: (value) {
                             setModalState(() {
                               serverPort = value;
+                              saveServerConfig();
                             });
                           },
                           controller: _portTextFieldController,
@@ -540,6 +558,8 @@ class _MyHomePageState extends State<MyHomePage> {
                               serverIp =
                                   '${hosts[index].internetAddress.address}';
                               _ipTextFieldController.text = serverIp;
+
+                              saveServerConfig();
                             });
                             Navigator.pop(context);
                           },
