@@ -3,7 +3,7 @@ import logging
 import os
 import pkgutil
 
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS
 
 from plugin_interface import PluginInterface
@@ -43,6 +43,19 @@ def get_plugins():
         }
         for plugin in plugins
     }
+
+
+@app.route("/desk_status", methods=["POST"])
+def receive_desk_status():
+    """
+    Receives and updates the desk status for the plugin with id "standing_desk"
+    """
+    desk_status = request.json
+    for plugin in plugins:
+        if plugin.get_id() == "standing_desk":
+            plugin.set_distance(desk_status.get("distance", plugin.distance))
+            break
+    return {}
 
 
 if __name__ == "__main__":

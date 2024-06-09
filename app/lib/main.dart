@@ -427,6 +427,23 @@ class _MyHomePageState extends State<MyHomePage> {
                                                   : [])
                                           : <StatelessWidget>[]) +
                                       [
+                                        // Standing Desk Time
+                                        chartsData["standingDesk"]
+                                                    ["total_string"] !=
+                                                null
+                                            ? IconLegendVertical(
+                                                icon: Icons.accessibility_new,
+                                                text: chartsData["standingDesk"]
+                                                    ["total_string"],
+                                                iconColor:
+                                                    chartsData["standingDesk"]
+                                                                ["last_on"] ==
+                                                            true
+                                                        ? Colors.white
+                                                        : Color.fromARGB(
+                                                            255, 49, 48, 48))
+                                            : Container(),
+
                                         // Total time
                                         chartsData["display"]["total_string"] !=
                                                 null
@@ -707,6 +724,49 @@ class _MyHomePageState extends State<MyHomePage> {
                         60)
                     .toString() +
                 "m");
+        }
+
+        if (data.containsKey("standing_desk")) {
+          // check if data wasn't initialized or it was last updated yesterday
+          if (!chartsData.containsKey("standingDesk") ||
+              chartsData["standingDesk"]["last_updated"].day !=
+                  DateTime.now().day) {
+            chartsData["standingDesk"] = Map<String, dynamic>();
+            chartsData["standingDesk"]["total_time_ms"] = 0;
+            chartsData["standingDesk"]["last_updated"] = DateTime.now();
+            chartsData["standingDesk"]["last_on"] =
+                data["standing_desk"]["standing"];
+          }
+
+          // sum the difference between now and the last updated time
+          if (chartsData["standingDesk"]["last_on"] &&
+              data["standing_desk"]["standing"] &&
+              data["default_display"]["status"] == "on")
+            chartsData["standingDesk"]["total_time_ms"] += DateTime.now()
+                .difference(chartsData["standingDesk"]["last_updated"])
+                .inMilliseconds;
+
+          chartsData["standingDesk"]["last_updated"] = DateTime.now();
+          chartsData["standingDesk"]["last_on"] =
+              data["standing_desk"]["standing"];
+
+          if (chartsData["standingDesk"].containsKey("total_time_ms"))
+            chartsData["standingDesk"]["total_string"] =
+                ((chartsData["standingDesk"]["total_time_ms"] > 3600000
+                        ? Duration(
+                                    milliseconds: chartsData["standingDesk"]
+                                        ["total_time_ms"])
+                                .inHours
+                                .toString() +
+                            "h"
+                        : "") +
+                    (Duration(
+                                    milliseconds: chartsData["standingDesk"]
+                                        ["total_time_ms"])
+                                .inMinutes %
+                            60)
+                        .toString() +
+                    "m");
         }
 
         if (data.containsKey("default_connections")) {
