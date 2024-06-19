@@ -428,32 +428,34 @@ class _MyHomePageState extends State<MyHomePage> {
                                           : <StatelessWidget>[]) +
                                       [
                                         // Standing Desk Time
-                                        chartsData["standingDesk"]
-                                                    ["total_string"] !=
-                                                null
+                                        chartsData.containsKey("standingDesk")
                                             ? IconLegendVertical(
                                                 icon: Icons.accessibility_new,
                                                 text: chartsData["standingDesk"]
                                                     ["total_string"],
                                                 iconColor:
                                                     chartsData["standingDesk"]
-                                                                ["last_on"] ==
-                                                            true
+                                                            ["last_on"]
                                                         ? Colors.white
                                                         : Color.fromARGB(
                                                             255, 49, 48, 48))
                                             : Container(),
 
                                         // Total time
-                                        chartsData["display"]["total_string"] !=
-                                                null
+                                        chartsData.containsKey("display")
                                             ? IconLegendVertical(
                                                 icon: Icons.monitor,
                                                 text: chartsData["display"]
                                                     ["total_string"])
                                             : Container(),
 
-                                        // Connections
+                                        Text(
+                                          "${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}",
+                                          style: TextStyle(
+                                            color: Colors.grey[400],
+                                            fontSize: 14,
+                                          ),
+                                        ),
                                       ],
                                 ),
                               ],
@@ -708,22 +710,21 @@ class _MyHomePageState extends State<MyHomePage> {
           chartsData["display"]["last_on"] =
               data["default_display"]["status"] == "on";
 
-          if (chartsData["display"].containsKey("total_time_ms"))
-            chartsData["display"]["total_string"] = ((chartsData["display"]
-                            ["total_time_ms"] >
-                        3600000
-                    ? Duration(
-                                milliseconds: chartsData["display"]
-                                    ["total_time_ms"])
-                            .inHours
-                            .toString() +
-                        "h"
-                    : "") +
-                (Duration(milliseconds: chartsData["display"]["total_time_ms"])
-                            .inMinutes %
-                        60)
-                    .toString() +
-                "m");
+          chartsData["display"]["total_string"] = ((chartsData["display"]
+                          ["total_time_ms"] >
+                      3600000
+                  ? Duration(
+                              milliseconds: chartsData["display"]
+                                  ["total_time_ms"])
+                          .inHours
+                          .toString() +
+                      "h"
+                  : "") +
+              (Duration(milliseconds: chartsData["display"]["total_time_ms"])
+                          .inMinutes %
+                      60)
+                  .toString() +
+              "m");
         }
 
         if (data.containsKey("standing_desk")) {
@@ -750,23 +751,22 @@ class _MyHomePageState extends State<MyHomePage> {
           chartsData["standingDesk"]["last_on"] =
               data["standing_desk"]["standing"];
 
-          if (chartsData["standingDesk"].containsKey("total_time_ms"))
-            chartsData["standingDesk"]["total_string"] =
-                ((chartsData["standingDesk"]["total_time_ms"] > 3600000
-                        ? Duration(
-                                    milliseconds: chartsData["standingDesk"]
-                                        ["total_time_ms"])
-                                .inHours
-                                .toString() +
-                            "h"
-                        : "") +
-                    (Duration(
-                                    milliseconds: chartsData["standingDesk"]
-                                        ["total_time_ms"])
-                                .inMinutes %
-                            60)
-                        .toString() +
-                    "m");
+          chartsData["standingDesk"]["total_string"] =
+              ((chartsData["standingDesk"]["total_time_ms"] > 3600000
+                      ? Duration(
+                                  milliseconds: chartsData["standingDesk"]
+                                      ["total_time_ms"])
+                              .inHours
+                              .toString() +
+                          "h"
+                      : "") +
+                  (Duration(
+                                  milliseconds: chartsData["standingDesk"]
+                                      ["total_time_ms"])
+                              .inMinutes %
+                          60)
+                      .toString() +
+                  "m");
         }
 
         if (data.containsKey("default_connections")) {
