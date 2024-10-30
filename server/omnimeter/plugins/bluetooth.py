@@ -32,8 +32,12 @@ else:
             for i, line in enumerate(info_lines):
                 if i == 0: continue
                 line = line.strip()
-                key, value = line.split(": ", 1)
-                info[key] = value
+                try:
+                    key, value = line.split(": ", 1)
+                    info[key] = value
+                except Exception as e:
+                    print(line, e)
+                    pass
 
             if "Connected" in info and info["Connected"] == "yes":
                 filtered_info = {}
