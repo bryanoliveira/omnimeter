@@ -12,7 +12,8 @@ def is_display_on():
         return False
 
     try:
-        output = subprocess.check_output("xset -q", shell=True).decode()
+        display = os.environ.get('DISPLAY', ':0')
+        output = subprocess.check_output(f"DISPLAY={display} xset -q", shell=True, stderr=subprocess.STDOUT).decode()
         # Look for lines that indicate the display power status
         for line in output.split("\n"):
             if "Monitor is" in line:

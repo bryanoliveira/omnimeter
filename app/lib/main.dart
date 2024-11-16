@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' show Platform;
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
@@ -208,7 +208,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       ),
                                       Padding(
                                         padding: EdgeInsets.only(
-                                          left: 75.0,
+                                          left: 10.0,
                                         ),
                                         child: Column(
                                           crossAxisAlignment:
@@ -494,7 +494,8 @@ class _MyHomePageState extends State<MyHomePage> {
     var subnet = ipToCSubnet(wifiIP);
 
     final scanner = LanScanner();
-    final List<Host> hosts = [];
+    List<Host> hosts = [];
+    Set<String> checkedHosts = Set<String>();
 
     showModalBottomSheet(
       context: context,
@@ -505,20 +506,39 @@ class _MyHomePageState extends State<MyHomePage> {
             Future<void> scanNetwork() async {
               for (int i = 2; i <= 255; i += 5) {
                 final int endIP = (i + 4 <= 255) ? i + 4 : 255;
-                final List<Host> partialHosts = await scanner.quickIcmpScanSync(
+                List<Host> partialHosts = await scanner.quickIcmpScanSync(
                   subnet,
                   firstIP: i,
                   lastIP: endIP,
                 );
+                // Remove duplicates from partialHosts
+                partialHosts = partialHosts.toSet().toList();
 
-                if (partialHosts.isEmpty) return;
+                for (var host in partialHosts) {
+                  if (checkedHosts.contains(host.internetAddress.address))
+                    continue;
 
-                try {
-                  setModalState(() {
-                    hosts.addAll(partialHosts);
-                  });
-                } catch (e) {
-                  return;
+                  try {
+                    final response = await http
+                        .get(
+                          Uri.http(
+                              '${host.internetAddress.address}:$serverPort',
+                              '/'),
+                        )
+                        .timeout(Duration(seconds: 2));
+
+                    setModalState(() {
+                      if (response.statusCode < 400) {
+                        if (!checkedHosts
+                            .contains(host.internetAddress.address)) {
+                          hosts.add(host);
+                        }
+                      }
+                      checkedHosts.add(host.internetAddress.address);
+                    });
+                  } catch (e) {
+                    // If connection fails, skip this host
+                  }
                 }
               }
             }
