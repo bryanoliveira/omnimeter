@@ -3,8 +3,17 @@ from plugin_interface import PluginInterface
 
 # plugin imports
 import os
-import cpuinfo
 import psutil
+
+# cpuinfo is slow (~1s per call) — cache the result at module level
+_cpu_name_cache = None
+
+def _get_cpu_name() -> str:
+    global _cpu_name_cache
+    if _cpu_name_cache is None:
+        import cpuinfo
+        _cpu_name_cache = " ".join(cpuinfo.get_cpu_info()["brand_raw"].split(" ")[:4])
+    return _cpu_name_cache
 
 
 ### WINDOWS
@@ -116,7 +125,7 @@ class CPUPlugin(PluginInterface):
         }
 
         return {
-            "name": " ".join(cpuinfo.get_cpu_info()["brand_raw"].split(" ")[:4]),
+            "name": _get_cpu_name(),
             "utilization": psutil.cpu_percent(interval=None),
             "memory": {
                 "max": mem.total / (1024 ** 2),
