@@ -15,6 +15,7 @@ logger = logging.getLogger("werkzeug")
 logger.setLevel(logging.ERROR)
 
 plugins = []
+CACHE_TTL = 2.0  # seconds before plugin data is considered stale
 
 
 @app.route("/")
@@ -70,7 +71,9 @@ if __name__ == "__main__":
                     class_type, PluginInterface
                 ):
                     print("Found plugin", class_type)
-                    plugins.append(class_type())
+                    plugin = class_type()
+                    plugin.set_cache_ttl(CACHE_TTL)
+                    plugins.append(plugin)
                     print("Installed plugin", class_type)
     except ImportError as e:
         logger.error(e)

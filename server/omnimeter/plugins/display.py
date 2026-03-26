@@ -34,7 +34,7 @@ class DisplayPlugin(PluginInterface):
     def get_description(self):
         return "A simple Display monitor."
 
-    def get_dict(self):
+    def _fetch_data(self):
         return {
             "status": "on" if is_display_on() else "off",
         }

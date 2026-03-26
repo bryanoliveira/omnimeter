@@ -99,7 +99,7 @@ class CPUPlugin(PluginInterface):
     def get_description(self):
         return "A simple CPU monitor."
 
-    def get_dict(self):
+    def _fetch_data(self):
         fetch_stats()
         clock, clock_min, clock_max = get_cpu_clock()
         mem = psutil.virtual_memory()
@@ -107,7 +107,12 @@ class CPUPlugin(PluginInterface):
         disks = {
             p.mountpoint: psutil.disk_usage(p.mountpoint).percent
             for p in psutil.disk_partitions()
-            if p.fstype not in ("squashfs", "vfat") and "rw" in p.opts 
+            if (
+                p.fstype not in ("squashfs", "vfat")
+                and "rw" in p.opts
+                and p.mountpoint not in ("/boot", "/boot/efi")
+                # and not p.mountpoint.startswith("/mnt")
+            )
         }
 
         return {

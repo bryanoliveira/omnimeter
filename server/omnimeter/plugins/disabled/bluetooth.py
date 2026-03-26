@@ -67,7 +67,7 @@ class BluetoothPlugin(PluginInterface):
     def get_description(self):
         return "A simple bluetooth info monitor."
 
-    def get_dict(self):
+    def _fetch_data(self):
         return {
             "devices": get_connected_bluetooth_devices_info()
         }

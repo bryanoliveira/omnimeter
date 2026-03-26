@@ -8,6 +8,7 @@ import os
 
 class GPUPlugin(PluginInterface):
     def __init__(self):
+        super().__init__()
         # nvidia-smi --help-query-gpu
         self.cmd = (
             "nvidia-smi -i 0 --query-gpu=index,name,"
@@ -42,7 +43,7 @@ class GPUPlugin(PluginInterface):
     def get_description(self):
         return "A simple NVIDIA GPU monitor"
 
-    def get_dict(self):
+    def _fetch_data(self):
         data = self.get_gpu_data()
         gpus_info = {}
         for info in data:

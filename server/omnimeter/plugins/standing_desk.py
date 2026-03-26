@@ -6,6 +6,7 @@ SITTING_STANDING_THRESHOLD = 850  # mm
 
 class StandingDeskPlugin(PluginInterface):
     def __init__(self):
+        super().__init__()
         self.distance = 0
         self.standing = False
 
@@ -21,8 +22,9 @@ class StandingDeskPlugin(PluginInterface):
     def set_distance(self, distance):
         self.distance = distance
         self.standing = distance > SITTING_STANDING_THRESHOLD
+        self._cache = None
 
-    def get_dict(self):
+    def _fetch_data(self):
         return {
             "distance": self.distance,
             "standing": self.standing,

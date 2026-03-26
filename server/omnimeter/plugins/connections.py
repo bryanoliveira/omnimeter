@@ -53,6 +53,6 @@ class ConnectionsPlugin(PluginInterface):
     def get_description(self):
         return "A simple SSH connections monitor."
 
-    def get_dict(self):
+    def _fetch_data(self):
         ssh_count, unique_users = count_ssh_users()
         return {"total": ssh_count, "users": unique_users}
