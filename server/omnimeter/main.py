@@ -1,3 +1,5 @@
+import importlib
+import importlib.util
 import inspect
 import logging
 import os
@@ -61,9 +63,15 @@ def receive_desk_status():
 
 if __name__ == "__main__":
     try:
-        for loader, modname, _ in pkgutil.walk_packages(path=["./plugins"]):
+        plugins_path = os.path.join(os.path.dirname(__file__), "plugins")
+        for finder, modname, _ in pkgutil.walk_packages(path=[plugins_path]):
             print("Found module", modname)
-            module = loader.find_module(modname).load_module(modname)
+            spec = importlib.util.spec_from_file_location(
+                modname,
+                os.path.join(plugins_path, modname + ".py"),
+            )
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
             print("Imported module", modname)
             for class_name, class_type in inspect.getmembers(module, inspect.isclass):
                 print("Found class", class_name, class_type)
